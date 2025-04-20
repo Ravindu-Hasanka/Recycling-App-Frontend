@@ -30,28 +30,33 @@ const EducationalOfferings = () => {
   const offerings = [
     {
       title: "Nature Walks",
-      description: "Discover the wonders of nature through guided exploration."
+      description: "Discover the wonders of nature through guided exploration.",
+      imageUrl: "/images/nature-walks.jpg"
     },
     {
       title: "Science Explorers",
-      description: "Engage in hands-on experiments to spark curiosity."
+      description: "Engage in hands-on experiments to spark curiosity.",
+      imageUrl: "/images/science-explorers.jpg"
     },
     {
       title: "Green Gardening",
-      description: "Learn the art of gardening and the importance of green spaces."
+      description: "Learn the art of gardening and the importance of green spaces.",
+      imageUrl: "/images/green-gardening.jpg"
     },
     {
       title: "Storytime Adventures",
-      description: "Foster a love for reading with our curated book sessions."
+      description: "Foster a love for reading with our curated book sessions.",
+      imageUrl: "/images/storytime.jpg"
     },
     {
       title: "Creative Arts",
-      description: "Express creativity through art and craft workshops."
+      description: "Express creativity through art and craft workshops.",
+      imageUrl: "/images/creative-arts.jpg"
     },
     {
       title: "Mindful Yoga",
       description: "Promote mindfulness and health with our yoga sessions.",
-      imageUrl: "/lovable-uploads/a1fffe79-b912-48ee-a9d8-0683c05da6ad.png"
+      imageUrl: "/images/mindful-yoga.jpg"
     }
   ];
 

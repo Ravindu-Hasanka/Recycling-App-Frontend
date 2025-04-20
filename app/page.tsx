@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Navbar from "@/app/components/Layout/Navbar";
 import Hero from "@/app/components/Home/Hero";
 import FeaturedSection from "@/app/components/Home/FeaturedSection";
@@ -19,7 +18,7 @@ export default function Home() {
           <ActivitiesGrid />
           <PointsDisplay />
         </main>
-        {/*<Footer />*/}
+        <Footer />
       </div>
     // </div>
   );
