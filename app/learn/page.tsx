@@ -31,34 +31,24 @@ const Learn = () => {
 const ActivitiesGrid = () => {
     const activities = [
       {
-        title: "Eco Crafts",
-        imageUrl: "/images/eco-crafts.jpg",
-        link: "/learn/eco-crafts",
+        title: "Clean The Park",
+        imageUrl: "/images/clean-the-park.jpg",
+        link: "/learn/clean-the-park",
       },
       {
-        title: "Tree Planting",
-        imageUrl: "/images/tree-planting.jpg",
-        link: "/learn/tree-planting",
+        title: "Recycling Quiz",
+        imageUrl: "/images/recycling-quiz.jpg",
+        link: "/learn/recycling-quiz",
       },
       {
-        title: "Bird Feeder",
-        imageUrl: "/images/bird-feeder.jpg",
-        link: "/learn/bird-feeder",
+        title: "Trash Or Not",
+        imageUrl: "/images/trash-or-not.jpg",
+        link: "/learn/trash-or-not",
       },
       {
-        title: "Sorting Game",
-        imageUrl: "/images/sorting-game.jpg",
-        link: "/learn/sorting-game",
-      },
-      {
-        title: "Cardboard Art",
-        imageUrl: "/images/cardboard-art.jpg",
-        link: "/learn/cardboard-art",
-      },
-      {
-        title: "DIY Compost",
-        imageUrl: "/images/diy-compost.jpg",
-        link: "/learn/diy-compost",
+        title: "Sort Trash",
+        imageUrl: "/images/sort-trash.jpg",
+        link: "/learn/sort-trash",
       },
     ];
   
