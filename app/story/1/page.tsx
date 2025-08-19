@@ -168,6 +168,7 @@ export default function Page() {
                 {currentMessage}
                 <span className="inline-block w-2 h-5 bg-black ml-1 animate-pulse"></span>
               </div>
+              <div className="absolute w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-white border-b-8 border-b-transparent right-0 top-6 translate-x-2/3 rotate-180"></div>
             </motion.div>
           )}
         </div>
