@@ -3,7 +3,7 @@
 import { Play, Volume2, VolumeX } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Button } from '../components/ui/button';
+import { Button } from '../../components/ui/button';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
@@ -18,10 +18,10 @@ export default function Page() {
   const router = useRouter();
 
   const messages = [
-    "Welcome to our imaginary world!",
-    "I'm EcoHero, guardian of our planet!",
-    "Our beautiful Earth needs your help to fight pollution and climate change.",
-    "Are you ready to join me on this important adventure?"
+    "Oh no!",
+    "Litterbug is here!",
+    "Litterbug makes a mess everywhere he goes.",
+    "But with your help, we can teach him to recycle and keep our planet clean."
   ];
 
   // Autoplay background sound
@@ -89,13 +89,13 @@ export default function Page() {
 
   const onStartAdventure = () => {
     console.log('Adventure started! Navigating to the first adventure screen...');
-    router.push('/story/1'); // Navigate to the first adventure screen
+    router.push('/story/3'); // Navigate to the first adventure screen
   };
 
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center p-4 bg-cover bg-center relative overflow-hidden"
-      style={{ backgroundImage: `url('/assets/hero-background.jpg')` }}
+      style={{ backgroundImage: `url('/assets/city-park.jpg')` }}
     >
       {/* Dark overlay */}
       <div className="absolute inset-0 bg-black/70 z-0"></div>
@@ -115,42 +115,79 @@ export default function Page() {
         </Button>
       </div>
 
-      <div className="relative z-10 text-center max-w-4xl mx-auto">
-        <h1 className="font-adventure font-bold text-5xl md:text-7xl mb-20 text-primary animate-bounce-soft">
-          EcoHero Adventure Quest
-        </h1>
+      <div className="relative z-10 text-center max-w-4xl mx-auto w-full">
 
         {/* Character */}
         <div className="mb-8 relative h-64">
           <div
-            className="absolute transform -translate-x-[100px] transition-all duration-1000 ease-out"
+            className="absolute transform transition-all duration-1000 ease-out"
             style={{ left: characterPosition }}
           >
             <Image
               src="/assets/ecohero-character-right-look.png"
               alt="EcoHero - Your environmental superhero guide"
-              width={512}
-              height={512}
+              width={300}
+              height={300}
               className="shadow-glow"
             />
           </div>
 
           {/* Chat bubble */}
           {showChatBubble && (
-            <div className="absolute left-72 top-4 bg-white rounded-3xl p-4 max-w-md shadow-lg animate-fade-in">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="absolute left-64 top-4 bg-white rounded-3xl p-4 max-w-md shadow-lg"
+            >
               <div className="text-left text-black">
                 {currentMessage}
                 <span className="inline-block w-2 h-4 bg-black ml-1 animate-pulse"></span>
               </div>
               <div className="absolute w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-white border-b-8 border-b-transparent left-0 top-6 -translate-x-2/3"></div>
-            </div>
+            </motion.div>
           )}
+        </div>
+
+        {/* Static litterbug, bottle and wrapper */}
+        <div className="relative w-full h-96 flex justify-center items-end">
+          {/* Bottle (bottom-right, rotated 30deg) */}
+          <div className="absolute bottom-10 right-1/4 z-20">
+            <Image
+              src="/assets/plastic-bottle.png"
+              alt="bottle"
+              width={80}
+              height={80}
+              className="shadow-glow transform rotate-30"
+            />
+          </div>
+
+          {/* Wrappers (bottom-right) */}
+          <div className="absolute bottom-10 right-1/3 z-20">
+            <Image
+              src="/assets/wrappers.png"
+              alt="wrappers"
+              width={100}
+              height={100}
+              className="shadow-glow"
+            />
+          </div>
+
+          {/* Litterbug (static position) */}
+          <div className="absolute bottom-0 right-1/2 transform translate-x-40 z-30">
+            <Image
+              src="/assets/litterbug-left-look.png"
+              alt="litterbug"
+              width={200}
+              height={200}
+              className="shadow-glow"
+            />
+          </div>
         </div>
 
         {/* Buttons */}
         {showButtons && (
           <motion.div
-            className="absolute inset-0 flex flex-wrap gap-4 mt-100 justify-center items-center z-50"
+            className="flex flex-wrap gap-4 justify-center items-center z-50 mt-8"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1 }}
@@ -160,10 +197,7 @@ export default function Page() {
               className="px-6 py-3 rounded-full bg-gradient-to-r from-green-400 to-green-700 font-semibold shadow-lg hover:scale-105 transition-transform flex items-center"
             >
               <Play className="mr-2" size={20} />
-              Start Adventure!
-            </button>
-            <button className="px-6 py-3 rounded-full border-2 border-white/40 bg-white/10 backdrop-blur-md font-semibold shadow-md hover:scale-105 transition-transform flex items-center">
-              <span className="mr-2">🎵</span> Meet the Characters
+              Let's Clean Up!
             </button>
           </motion.div>
         )}
@@ -194,6 +228,9 @@ export default function Page() {
         }
         .shadow-glow {
           box-shadow: 0 0 15px rgba(72, 187, 120, 0.6);
+        }
+        .rotate-30 {
+          transform: rotate(30deg);
         }
       `}</style>
     </div>

@@ -5,6 +5,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Button } from '../../components/ui/button';
 import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -12,6 +13,7 @@ export default function Page() {
   const [currentMessage, setCurrentMessage] = useState('');
   const [showButtons, setShowButtons] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const router = useRouter();
 
   const messages = [
     "Hi there! I'm Litterbug",
@@ -72,6 +74,7 @@ export default function Page() {
 
   const onStartAdventure = () => {
     console.log('Adventure started! Navigating to the first adventure screen...');
+    router.push('/story/2');
   };
 
   return (
