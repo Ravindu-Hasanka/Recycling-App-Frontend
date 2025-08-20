@@ -10,21 +10,20 @@ import { useRouter } from 'next/navigation';
 export default function Page() {
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [characterPosition, setCharacterPosition] = useState('-100%');
+  const [turtlePosition, setTurtlePosition] = useState('100%');
   const [showChatBubble, setShowChatBubble] = useState(false);
+  const [currentSpeaker, setCurrentSpeaker] = useState<'ecohero' | 'tiko'>('ecohero');
   const [currentMessage, setCurrentMessage] = useState('');
-  const [messageIndex, setMessageIndex] = useState(0);
   const [showButtons, setShowButtons] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
   const router = useRouter();
 
-  const messages = [
-    "Oh no!",
-    "Litterbug is here!",
-    "Litterbug makes a mess everywhere he goes.",
-    "But with your help, we can teach him to recycle and keep our planet clean."
+  const messages: { speaker: 'ecohero' | 'tiko'; text: string }[] = [
+    { speaker: 'ecohero', text: "You did it! Look! It's all clean now!" },
+    { speaker: 'tiko', text: "Well done… nature is smiling." },
+    { speaker: 'ecohero', text: "And You've earned my first reward a shiny green cape!" },
   ];
 
-  // Autoplay background sound
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = 0.3;
@@ -39,7 +38,15 @@ export default function Page() {
       setCharacterPosition('0%');
     }, 1000);
 
-    return () => clearTimeout(characterTimer);
+    // Animate turtle entrance after a delay
+    const turtleTimer = setTimeout(() => {
+      setTurtlePosition('0%');
+    }, 2000);
+
+    return () => {
+      clearTimeout(characterTimer);
+      clearTimeout(turtleTimer);
+    };
   }, []);
 
   // Handle mute/unmute
@@ -49,16 +56,16 @@ export default function Page() {
     }
   }, [soundEnabled]);
 
-  // After character enters, show chat bubble and start typing messages
+  // After characters enter, show chat bubble and start typing messages
   useEffect(() => {
-    if (characterPosition === '0%') {
+    if (characterPosition === '0%' && turtlePosition === '0%') {
       const bubbleTimer = setTimeout(() => {
         setShowChatBubble(true);
         typeMessage(0); // start typing first message
-      }, 800);
+      }, 1000);
       return () => clearTimeout(bubbleTimer);
     }
-  }, [characterPosition]);
+  }, [characterPosition, turtlePosition]);
 
   // Typing function
   const typeMessage = (index: number) => {
@@ -69,27 +76,28 @@ export default function Page() {
     }
 
     const currentMsg = messages[index];
+    setCurrentSpeaker(currentMsg.speaker);
     let i = 0;
     setCurrentMessage(''); // reset for new message
 
     const typingInterval = setInterval(() => {
-      setCurrentMessage(currentMsg.substring(0, i + 1));
+      setCurrentMessage(currentMsg.text.substring(0, i + 1));
       i++;
 
-      if (i === currentMsg.length) {
+      if (i === currentMsg.text.length) {
         clearInterval(typingInterval);
 
         // Wait before typing next message
         setTimeout(() => {
           typeMessage(index + 1);
-        }, 1200);
+        }, 1500);
       }
     }, 50);
   };
 
   const onStartAdventure = () => {
     console.log('Adventure started! Navigating to the first adventure screen...');
-    router.push('/story/game-1'); // Navigate to the first adventure screen
+    router.push('/story/3'); // Navigate to the first adventure screen
   };
 
   return (
@@ -115,13 +123,13 @@ export default function Page() {
         </Button>
       </div>
 
-      <div className="relative z-10 text-center max-w-4xl mx-auto w-full">
-
-        {/* Character */}
-        <div className="mb-8 relative h-64">
+      <div className="relative z-10 text-center max-w-6xl mx-auto w-full flex flex-col items-center">
+        {/* Characters Container */}
+        <div className="flex justify-between items-end w-full mb-8 relative h-96">
+          {/* EcoHero on the left */}
           <div
-            className="absolute transform transition-all duration-1000 ease-out"
-            style={{ left: characterPosition }}
+            className="transform transition-all duration-1000 ease-out translate-y-30 mr-10"
+            style={{ transform: `translateX(${characterPosition})` }}
           >
             <Image
               src="/assets/ecohero-character-right-look.png"
@@ -132,57 +140,41 @@ export default function Page() {
             />
           </div>
 
-          {/* Chat bubble */}
-          {showChatBubble && (
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="absolute left-64 top-4 bg-white rounded-3xl p-4 max-w-md shadow-lg"
-            >
-              <div className="text-left text-black">
-                {currentMessage}
-                <span className="inline-block w-2 h-4 bg-black ml-1 animate-pulse"></span>
-              </div>
-              <div className="absolute w-0 h-0 border-t-8 border-t-transparent border-r-8 border-r-white border-b-8 border-b-transparent left-0 top-6 -translate-x-2/3"></div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Static litterbug, bottle and wrapper */}
-        <div className="relative w-full h-96 flex justify-center items-end">
-          {/* Bottle (bottom-right, rotated 30deg) */}
-          <div className="absolute bottom-10 right-1/4 z-20">
+          {/* Tiko the Turtle on the right */}
+          <div
+            className="transform transition-all duration-1000 ease-out translate-y-50"
+            style={{ transform: `translateX(${turtlePosition})` }}
+          >
             <Image
-              src="/assets/plastic-bottle.png"
-              alt="bottle"
-              width={80}
-              height={80}
-              className="shadow-glow transform rotate-30"
-            />
-          </div>
-
-          {/* Wrappers (bottom-right) */}
-          <div className="absolute bottom-10 right-1/3 z-20">
-            <Image
-              src="/assets/wrappers.png"
-              alt="wrappers"
-              width={100}
-              height={100}
-              className="shadow-glow"
-            />
-          </div>
-
-          {/* Litterbug (static position) */}
-          <div className="absolute bottom-0 right-1/2 transform translate-x-40 z-30">
-            <Image
-              src="/assets/litterbug-left-look.png"
-              alt="litterbug"
-              width={200}
-              height={200}
+              src="/assets/tiko-turtle-left-look.png" // Make sure this image exists
+              alt="Tiko the Turtle"
+              width={400}
+              height={400}
               className="shadow-glow"
             />
           </div>
         </div>
+
+        {/* Chat bubble */}
+        {showChatBubble && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className={`relative bg-white rounded-3xl p-4 max-w-md shadow-lg mb-8 ${
+            currentSpeaker === 'ecohero' ? 'self-center -translate-y-100 mr-40' : 'self-center'
+          }`}
+        >
+          <div className="text-left text-black">
+            {currentMessage}
+            <span className="inline-block w-2 h-4 bg-black ml-1 animate-pulse"></span>
+          </div>
+          <div className={`absolute w-0 h-0 border-t-8 border-t-transparent border-b-8 border-b-transparent ${
+            currentSpeaker === 'ecohero' 
+              ? 'border-r-8 border-r-white left-0 -translate-x-2/3 -translate-y-4' 
+              : 'border-l-8 border-l-white right-0 translate-x-2/3 -translate-y-4'
+          }`}></div>
+        </motion.div>
+      )}
 
         {/* Buttons */}
         {showButtons && (
@@ -197,40 +189,15 @@ export default function Page() {
               className="px-6 py-3 rounded-full bg-gradient-to-r from-green-400 to-green-700 font-semibold shadow-lg hover:scale-105 transition-transform flex items-center"
             >
               <Play className="mr-2" size={20} />
-              Let's Clean Up!
+              Let's Go to Next Adventure!
             </button>
           </motion.div>
         )}
       </div>
 
       <style jsx>{`
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes fadeInUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        .animate-float {
-          animation: float 3s ease-in-out infinite;
-        }
-        .animate-fade-in-up {
-          animation: fadeInUp 0.5s ease-out forwards;
-        }
-        .animate-fade-in {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
         .shadow-glow {
           box-shadow: 0 0 15px rgba(72, 187, 120, 0.6);
-        }
-        .rotate-30 {
-          transform: rotate(30deg);
         }
       `}</style>
     </div>
