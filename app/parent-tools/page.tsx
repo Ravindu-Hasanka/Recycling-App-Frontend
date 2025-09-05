@@ -19,9 +19,9 @@ const ParentTools = () => {
   const [loading, setLoading] = useState(true);
   const [progressData, setProgressData] = useState(null);
 
-  const parentId = '68ba45d460f70973b00e807f';
-  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEYXN1blRoYXRoc2FyYSIsInJvbGVzIjpbIlJPTEVfUEFSRU5UIl0sImlhdCI6MTc1NzA1MTMzOSwiZXhwIjoxNzU3MTM3NzM5fQ.whQQGFf0EAR-aNfQnXFiX-PZpTdjcpu0cy2k7xLsQCU';
-
+  const parentId = localStorage.getItem('userid');
+  const token = localStorage.getItem('authToken');
+  
   useEffect(() => {
     const fetchChildren = async () => {
       try {
