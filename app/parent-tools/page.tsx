@@ -9,23 +9,92 @@ import Footer from '../components/Layout/Footer';
 
 const colors = ['#2ecc71', '#3498db', '#f1c40f', '#e74c3c'];
 
-const upcomingActivities = [
+interface UpcomingActivity {
+  name: string;
+  date: string;
+}
+
+interface RecyclingTip {
+  title: string;
+  icon: React.ReactElement;
+  tips: string[];
+}
+
+interface Child {
+  id: string;
+  name: string;
+  // Add other child properties as needed
+}
+
+interface Story {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  image: string;
+  numberOfStages: number;
+  active: boolean;
+}
+
+interface ProgressItem {
+  id: string;
+  userId: string;
+  storyId: string;
+  currentStage: number;
+  marks: number[];
+  status: string;
+  lastPlayed: string;
+}
+
+interface ProgressStats {
+  totalPoints: number;
+  itemsRecycled: number;
+  dayStreak: number;
+}
+
+interface ProgressDataPoint {
+  week: string;
+  points: number;
+}
+
+interface WasteTypeDataPoint {
+  name: string;
+  value: number;
+}
+
+interface CompletedActivity {
+  name: string;
+  date: string;
+  accuracy: string;
+  points: number;
+  image: string;
+}
+
+interface ProgressData {
+  stats: ProgressStats;
+  progressData: ProgressDataPoint[];
+  wasteTypeData: WasteTypeDataPoint[];
+  completedActivities: CompletedActivity[];
+}
+
+const upcomingActivities: UpcomingActivity[] = [
   { name: 'Composting Tutorial', date: 'Oct 16, 2023' },
   { name: 'Community Challenge', date: 'Oct 17, 2023' },
   { name: 'Waste Audit', date: 'Oct 18, 2023' },
 ];
 
 const ParentTools = () => {
-  const [children, setChildren] = useState([]);
-  const [selectedChild, setSelectedChild] = useState(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [progressData, setProgressData] = useState(null);
-  const [showAddChildModal, setShowAddChildModal] = useState(false);
-  const [newChildName, setNewChildName] = useState('');
-  const [newChildUsername, setNewChildUsername] = useState('');
-  const [newChildEmail, setNewChildEmail] = useState('');
-  const [newChildPassword, setNewChildPassword] = useState('');
+  const [children, setChildren] = useState<Child[]>([]);
+  const [selectedChild, setSelectedChild] = useState<Child | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [progressData, setProgressData] = useState<ProgressData | null>(null);
+  const [showAddChildModal, setShowAddChildModal] = useState<boolean>(false);
+  const [newChildName, setNewChildName] = useState<string>('');
+  const [newChildUsername, setNewChildUsername] = useState<string>('');
+  const [newChildEmail, setNewChildEmail] = useState<string>('');
+  const [newChildPassword, setNewChildPassword] = useState<string>('');
+  const [stories, setStories] = useState<Story[]>([]);
   const router = useRouter();
 
   // Check if user is logged in
@@ -45,6 +114,7 @@ const ParentTools = () => {
     if (!token || !parentId) return;
     
     fetchChildren();
+    fetchStories();
   }, [token, parentId]);
 
   const fetchChildren = async () => {
@@ -66,7 +136,7 @@ const ParentTools = () => {
         return;
       }
       
-      const childrenData = await response.json();
+      const childrenData: Child[] = await response.json();
       setChildren(childrenData);
       if (childrenData.length > 0) {
         setSelectedChild(childrenData[0]);
@@ -78,8 +148,31 @@ const ParentTools = () => {
     }
   };
 
+  const fetchStories = async () => {
+    try {
+      const response = await fetch('http://localhost:8085/api/stories', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
+      if (response.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userid');
+        router.push('/login');
+        return;
+      }
+      
+      const storiesData: Story[] = await response.json();
+      setStories(storiesData);
+    } catch (error) {
+      console.error('Error fetching stories:', error);
+    }
+  };
+
   useEffect(() => {
-    if (!selectedChild || !token) return;
+    if (!selectedChild || !token || stories.length === 0) return;
 
     const fetchChildProgress = async () => {
       try {
@@ -100,17 +193,32 @@ const ParentTools = () => {
           return;
         }
         
-        const progressData = await response.json();
+        const progressData: ProgressItem[] = await response.json();
         
-        const transformedData = {
+        // Map progress data to story details
+        const completedActivities = progressData
+          .filter(item => item.marks && item.marks.length > 0) // Only include completed activities
+          .map((item, index) => {
+            const story = stories.find(s => s.id === item.storyId);
+            return {
+              name: story ? story.title : `Activity ${index + 1}`,
+              date: new Date(item.lastPlayed).toLocaleDateString(),
+              accuracy: `${item.marks[item.marks.length - 1] || 0}%`,
+              points: item.marks.reduce((sum, mark) => sum + mark, 0),
+              image: story ? story.image : `https://placehold.co/600x400/${colors[index]}/ffffff?text=Activity`
+            };
+          });
+
+        const transformedData: ProgressData = {
           stats: {
-            totalPoints: progressData.reduce((total, item) => total + (item.marks?.[0] || 0), 0),
+            totalPoints: progressData.reduce((total: number, item: ProgressItem) => 
+              total + (item.marks?.reduce((sum, mark) => sum + mark, 0) || 0), 0),
             itemsRecycled: progressData.length * 10,
             dayStreak: Math.floor(progressData.length / 2) 
           },
           progressData: [
-            { week: 'Week 1', points: progressData[0]?.marks?.[0] || 0 },
-            { week: 'Week 2', points: progressData[1]?.marks?.[0] || 0 },
+            { week: 'Week 1', points: progressData[0]?.marks?.reduce((sum, mark) => sum + mark, 0) || 0 },
+            { week: 'Week 2', points: progressData[1]?.marks?.reduce((sum, mark) => sum + mark, 0) || 0 },
           ],
           wasteTypeData: [
             { name: 'Plastic', value: 45 },
@@ -118,13 +226,7 @@ const ParentTools = () => {
             { name: 'Glass', value: 15 },
             { name: 'Metal', value: 10 },
           ],
-          completedActivities: progressData.map((item, index) => ({
-            name: `Activity ${index + 1}`,
-            date: new Date(item.lastPlayed).toLocaleDateString(),
-            accuracy: `${item.marks?.[0] || 0}%`,
-            points: item.marks?.[0] || 0,
-            image: `https://placehold.co/600x400/${colors[index]}/ffffff?text=Activity`
-          }))
+          completedActivities
         };
 
         setProgressData(transformedData);
@@ -134,9 +236,9 @@ const ParentTools = () => {
     };
 
     fetchChildProgress();
-  }, [selectedChild, token, router]);
+  }, [selectedChild, token, router, stories]);
 
-  const handleAddChild = async (e) => {
+  const handleAddChild = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -181,7 +283,7 @@ const ParentTools = () => {
     }
   };
 
-  const recyclingTips = [
+  const recyclingTips: RecyclingTip[] = [
     {
       title: 'Plastic Recycling',
       icon: <Recycle className="text-blue-500 w-6 h-6" />,
@@ -366,8 +468,8 @@ const ParentTools = () => {
               <section className="mb-12">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Recent Achievements</h2>
                 <div className="grid md:grid-cols-3 gap-6">
-                  {progressData.completedActivities.map((activity) => (
-                    <div key={activity.name} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 transform hover:-translate-y-1 transition-transform duration-300">
+                  {progressData.completedActivities.map((activity, index) => (
+                    <div key={index} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 transform hover:-translate-y-1 transition-transform duration-300">
                       <img src={activity.image} alt={activity.name} className="w-full h-40 object-cover" />
                       <div className="p-4">
                         <h3 className="font-bold text-lg mb-1 text-gray-800">{activity.name}</h3>
