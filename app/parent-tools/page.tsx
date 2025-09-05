@@ -44,6 +44,10 @@ interface ProgressItem {
   marks: number[];
   status: string;
   lastPlayed: string;
+  plastic: number;
+  glass: number;
+  organic: number;
+  metal: number;
 }
 
 interface ProgressStats {
@@ -201,6 +205,21 @@ const ParentTools = () => {
         
         const progressData: ProgressItem[] = await response.json();
         
+        // Calculate waste type totals
+        const wasteTypeTotals = {
+          Plastic: 0,
+          Organic: 0,
+          Glass: 0,
+          Metal: 0,
+        };
+        
+        progressData.forEach((item: ProgressItem) => {
+          wasteTypeTotals.Plastic += item.plastic || 0;
+          wasteTypeTotals.Organic += item.organic || 0;
+          wasteTypeTotals.Glass += item.glass || 0;
+          wasteTypeTotals.Metal += item.metal || 0;
+        });
+        
         // Map progress data to story details
         const completedActivities = progressData
           .filter(item => item.marks && item.marks.length > 0) // Only include completed activities
@@ -227,10 +246,10 @@ const ParentTools = () => {
             { week: 'Week 2', points: progressData[1]?.marks?.reduce((sum, mark) => sum + mark, 0) || 0 },
           ],
           wasteTypeData: [
-            { name: 'Plastic', value: 45 },
-            { name: 'Paper', value: 30 },
-            { name: 'Glass', value: 15 },
-            { name: 'Metal', value: 10 },
+            { name: 'Plastic', value: wasteTypeTotals.Plastic },
+            { name: 'Organic', value: wasteTypeTotals.Organic },
+            { name: 'Glass', value: wasteTypeTotals.Glass },
+            { name: 'Metal', value: wasteTypeTotals.Metal },
           ],
           completedActivities
         };
