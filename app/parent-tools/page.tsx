@@ -1,50 +1,10 @@
 'use client'
 
-import React from 'react';
-import { LineChart, Line, PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import { Leaf, Recycle, Clock, Trophy, Zap, Calendar, Info } from 'lucide-react';
-import Navbar from '../components/Layout/Navbar';
-import Footer from '../components/Layout/Footer';
-
-const progressData = [
-  { week: 'Week 1', points: 40 },
-  { week: 'Week 2', points: 65 },
-  { week: 'Week 3', points: 85 },
-  { week: 'Week 4', points: 120 },
-];
-
-const wasteTypeData = [
-  { name: 'Plastic', value: 45 },
-  { name: 'Paper', value: 30 },
-  { name: 'Glass', value: 15 },
-  { name: 'Metal', value: 10 },
-];
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, CartesianGrid, XAxis, YAxis } from 'recharts';
+import { Leaf, Recycle, Clock, Trophy, Zap, Calendar, ChevronDown } from 'lucide-react';
 
 const colors = ['#2ecc71', '#3498db', '#f1c40f', '#e74c3c'];
-
-const completedActivities = [
-  {
-    name: 'Plastic Sorting Game',
-    date: 'Oct 15, 2023',
-    accuracy: '92%',
-    points: 50,
-    image: '/images/sort-trash.jpg'
-  },
-  {
-    name: 'Recycle Quiz',
-    date: 'Oct 14, 2023',
-    accuracy: '85%',
-    points: 30,
-    image: '/images/recycling-quiz.jpg'
-  },
-  {
-    name: 'Trash or Not',
-    date: 'Oct 13, 2023',
-    accuracy: '100%',
-    points: 20,
-    image: '/images/trash-or-not.jpg'
-  },
-];
 
 const upcomingActivities = [
   { name: 'Composting Tutorial', date: 'Oct 16, 2023' },
@@ -52,34 +12,156 @@ const upcomingActivities = [
   { name: 'Waste Audit', date: 'Oct 18, 2023' },
 ];
 
-const recyclingTips = [
-  {
-    title: 'Plastic Recycling',
-    icon: <Recycle className="text-ecoblue-500 w-6 h-6" />,
-    tips: ['Sort by resin codes', 'Rinse containers first', 'Remove non-recyclable parts'],
-    image: '/images/plastic-tips.jpg'
-  },
-  {
-    title: 'Paper Waste',
-    icon: <Leaf className="text-ecoblue-500 w-6 h-6" />,
-    tips: ['Flatten boxes', 'Remove staples', 'Keep dry and clean'],
-    image: '/images/paper-tips.jpg'
-  },
-  {
-    title: 'Composting',
-    icon: <Zap className="text-ecoblue-500 w-6 h-6" />,
-    tips: ['Balance greens/browns', 'Turn weekly', 'Avoid meats/dairy'],
-    image: '/images/compost-tips.jpg'
-  },
-];
-
 const ParentTools = () => {
+  const [children, setChildren] = useState([]);
+  const [selectedChild, setSelectedChild] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [progressData, setProgressData] = useState(null);
+
+  // Hardcoded values - replace with actual values from your auth system
+  const parentId = '68ba45d460f70973b00e807f';
+  const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEYXN1blRoYXRoc2FyYSIsInJvbGVzIjpbIlJPTEVfUEFSRU5UIl0sImlhdCI6MTc1NzA1MTMzOSwiZXhwIjoxNzU3MTM3NzM5fQ.whQQGFf0EAR-aNfQnXFiX-PZpTdjcpu0cy2k7xLsQCU';
+
+  // Fetch children list
+  useEffect(() => {
+    const fetchChildren = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:8085/api/auth/parent/children?parentId=${parentId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        const childrenData = await response.json();
+        setChildren(childrenData);
+        if (childrenData.length > 0) {
+          setSelectedChild(childrenData[0]);
+        }
+      } catch (error) {
+        console.error('Error fetching children:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchChildren();
+  }, []);
+
+  // Fetch child progress when selected child changes
+  useEffect(() => {
+    const fetchChildProgress = async () => {
+      if (!selectedChild) return;
+
+      try {
+        const response = await fetch(
+          `http://localhost:8085/api/progress/child/${selectedChild.id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        const progressData = await response.json();
+        
+        // Transform API data to match your UI structure
+        const transformedData = {
+          stats: {
+            totalPoints: progressData.reduce((total, item) => total + (item.marks?.[0] || 0), 0),
+            itemsRecycled: progressData.length * 10, // Example calculation
+            dayStreak: Math.floor(progressData.length / 2) // Example calculation
+          },
+          progressData: [
+            { week: 'Week 1', points: progressData[0]?.marks?.[0] || 0 },
+            { week: 'Week 2', points: progressData[1]?.marks?.[0] || 0 },
+            // Add more weeks as needed based on your data
+          ],
+          wasteTypeData: [
+            { name: 'Plastic', value: 45 },
+            { name: 'Paper', value: 30 },
+            { name: 'Glass', value: 15 },
+            { name: 'Metal', value: 10 },
+          ],
+          completedActivities: progressData.map((item, index) => ({
+            name: `Activity ${index + 1}`,
+            date: new Date(item.lastPlayed).toLocaleDateString(),
+            accuracy: `${item.marks?.[0] || 0}%`,
+            points: item.marks?.[0] || 0,
+            image: `https://placehold.co/600x400/${colors[index]}/ffffff?text=Activity`
+          }))
+        };
+
+        setProgressData(transformedData);
+      } catch (error) {
+        console.error('Error fetching child progress:', error);
+      }
+    };
+
+    fetchChildProgress();
+  }, [selectedChild]);
+
+  const recyclingTips = [
+    {
+      title: 'Plastic Recycling',
+      icon: <Recycle className="text-blue-500 w-6 h-6" />,
+      tips: ['Sort by resin codes', 'Rinse containers first', 'Remove non-recyclable parts'],
+    },
+    {
+      title: 'Paper Waste',
+      icon: <Leaf className="text-green-500 w-6 h-6" />,
+      tips: ['Flatten boxes', 'Remove staples', 'Keep dry and clean'],
+    },
+    {
+      title: 'Composting',
+      icon: <Zap className="text-yellow-500 w-6 h-6" />,
+      tips: ['Balance greens/browns', 'Turn weekly', 'Avoid meats/dairy'],
+    },
+  ];
+
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (!selectedChild || !progressData) {
+    return <div className="min-h-screen flex items-center justify-center">No data available</div>;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-black">
-      <Navbar />
-      <main className="flex-grow py-12 px-4">
+      <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl font-bold mb-8 text-center text-gray-800">Recycling Progress Dashboard</h1>
+          <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+            <div className="relative w-full md:w-auto">
+                <button
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center justify-between w-full md:w-48 px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm text-lg font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                >
+                    <span>{selectedChild.name}</span>
+                    <ChevronDown className={`w-5 h-5 transition-transform ${isDropdownOpen ? 'transform rotate-180' : ''}`} />
+                </button>
+                {isDropdownOpen && (
+                    <div className="absolute z-10 w-full md:w-48 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg">
+                        <ul className="py-1">
+                            {children.map((child) => (
+                                <li
+                                    key={child.id}
+                                    onClick={() => {
+                                        setSelectedChild(child);
+                                        setIsDropdownOpen(false);
+                                    }}
+                                    className="px-4 py-2 text-md text-gray-700 hover:bg-gray-100 cursor-pointer"
+                                >
+                                    {child.name}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+            <h1 className="text-3xl md:text-4xl font-bold text-center text-gray-800">Recycling Progress Dashboard</h1>
+          </div>
 
           {/* Progress Overview Cards */}
           <div className="grid md:grid-cols-3 gap-6 mb-12">
@@ -90,7 +172,7 @@ const ParentTools = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Total Points</p>
-                  <p className="text-3xl font-bold text-gray-800">1,240</p>
+                  <p className="text-3xl font-bold text-gray-800">{progressData.stats.totalPoints.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -102,7 +184,7 @@ const ParentTools = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Items Recycled</p>
-                  <p className="text-3xl font-bold text-gray-800">356</p>
+                  <p className="text-3xl font-bold text-gray-800">{progressData.stats.itemsRecycled}</p>
                 </div>
               </div>
             </div>
@@ -114,7 +196,7 @@ const ParentTools = () => {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Day Streak</p>
-                  <p className="text-3xl font-bold text-gray-800">14 Days</p>
+                  <p className="text-3xl font-bold text-gray-800">{progressData.stats.dayStreak} Days</p>
                 </div>
               </div>
             </div>
@@ -123,20 +205,20 @@ const ParentTools = () => {
           {/* Progress Charts Section */}
           <section className="grid md:grid-cols-2 gap-8 mb-12">
             <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Recycle className="text-ecoblue-500" /> Weekly Progress
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                <Recycle className="text-green-500" /> Weekly Progress
               </h2>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={progressData}>
+                  <LineChart data={progressData.progressData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="week" />
                     <YAxis />
                     <Tooltip />
-                    <Line 
-                      type="monotone" 
-                      dataKey="points" 
-                      stroke="#2ecc71" 
+                    <Line
+                      type="monotone"
+                      dataKey="points"
+                      stroke="#2ecc71"
                       strokeWidth={2}
                       dot={{ fill: '#2ecc71' }}
                     />
@@ -146,14 +228,14 @@ const ParentTools = () => {
             </div>
 
             <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Leaf className="text-ecoblue-500" /> Waste Type Distribution
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                <Leaf className="text-green-500" /> Waste Type Distribution
               </h2>
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={wasteTypeData}
+                      data={progressData.wasteTypeData}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
@@ -161,7 +243,7 @@ const ParentTools = () => {
                       paddingAngle={5}
                       dataKey="value"
                     >
-                      {wasteTypeData.map((entry, index) => (
+                      {progressData.wasteTypeData.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
                       ))}
                     </Pie>
@@ -177,14 +259,14 @@ const ParentTools = () => {
           <section className="mb-12">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">Recent Achievements</h2>
             <div className="grid md:grid-cols-3 gap-6">
-              {completedActivities.map((activity) => (
-                <div key={activity.name} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
+              {progressData.completedActivities.map((activity) => (
+                <div key={activity.name} className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 transform hover:-translate-y-1 transition-transform duration-300">
                   <img src={activity.image} alt={activity.name} className="w-full h-40 object-cover" />
                   <div className="p-4">
                     <h3 className="font-bold text-lg mb-1 text-gray-800">{activity.name}</h3>
                     <div className="flex justify-between text-sm text-gray-600">
                       <span>Accuracy: {activity.accuracy}</span>
-                      <span>{activity.points} pts</span>
+                      <span className="font-semibold text-green-600">{activity.points} pts</span>
                     </div>
                     <p className="text-sm text-gray-500 mt-2">Completed: {activity.date}</p>
                   </div>
@@ -214,7 +296,7 @@ const ParentTools = () => {
 
             <section>
               <h2 className="text-2xl font-bold mb-6 text-gray-800">Recycling Tips</h2>
-              <div className="grid gap-4">
+              <div className="space-y-4">
                 {recyclingTips.map((tip, index) => (
                   <div key={index} className="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
                     <div className="flex items-start gap-4">
@@ -235,7 +317,6 @@ const ParentTools = () => {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   );
 };
