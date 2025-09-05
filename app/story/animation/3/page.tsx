@@ -58,7 +58,7 @@ export default function VideoIntroPage() {
         autoPlay
         muted={!soundEnabled}
       >
-        <source src="/assets/animations/Chapter01.mp4" type="video/mp4" />
+        <source src="/assets/animations/Chapter03.mp4" type="video/mp4" />
         Your browser does not support the video tag.
       </video>
 
