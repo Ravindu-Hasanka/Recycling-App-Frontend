@@ -17,9 +17,13 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-8">
             <Link href="/" className="text-gray-700 hover:text-blue-500 transition-colors">Home</Link>
             <Link href="/story" className="text-gray-700 hover:text-blue-500 transition-colors">Eco Story</Link>
-            <Link href="/learn" className="text-gray-700 hover:text-blue-500 transition-colors">Learn</Link>
+            {localStorage.getItem('role') === 'STUDENT' && (
+              <Link href="/learn" className="text-gray-700 hover:text-blue-500 transition-colors">Learn</Link>
+            )}
             <Link href="/paths" className="text-gray-700 hover:text-blue-500 transition-colors">Paths</Link>
-            <Link href="/parent-tools" className="text-gray-700 hover:text-blue-500 transition-colors">Parent Tools</Link>
+            {localStorage.getItem('role') === 'PARENT' && (
+              <Link href="/parent-tools" className="text-gray-700 hover:text-blue-500 transition-colors">Parent Tools</Link>
+            )}
             <Link href="/about" className="text-gray-700 hover:text-blue-500 transition-colors">About</Link>
           </div>
 

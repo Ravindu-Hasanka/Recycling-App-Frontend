@@ -131,6 +131,7 @@ export default function Login() {
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
                     localStorage.setItem('userid', data.userId);
+                    localStorage.setItem('role', data.role);
                     localStorage.setItem('user', JSON.stringify(data.user));
                 }
 
@@ -140,7 +141,7 @@ export default function Login() {
                         if (data.user.role === 'PARENT') {
                             router.push('/parent-tools');
                         } else if (data.user.role === 'KID') {
-                            router.push('/kid/dashboard');
+                            router.push('/');
                         } else {
                             router.push('/dashboard');
                         }
@@ -149,7 +150,7 @@ export default function Login() {
                         if (formData.userType === 'PARENT') {
                             router.push('/parent-tools');
                         } else {
-                            router.push('/kid/dashboard');
+                            router.push('/');
                         }
                     }
                 }, 2000);

@@ -107,6 +107,12 @@ const ParentTools = () => {
     }
   }, [router]);
 
+  useEffect(() => {
+    if (localStorage.getItem('role') !== 'PARENT') {
+      router.push('/');
+    }
+  }, [router]);
+
   const parentId = localStorage.getItem('userid');
   const token = localStorage.getItem('authToken');
   
@@ -173,7 +179,7 @@ const ParentTools = () => {
 
   useEffect(() => {
     if (!selectedChild || !token || stories.length === 0) return;
-
+    
     const fetchChildProgress = async () => {
       try {
         const response = await fetch(

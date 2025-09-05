@@ -26,6 +26,13 @@ interface ProgressResponse {
 }
 
 const Learn = () => {
+  const router = useRouter();
+  useEffect(() => {
+    if (localStorage.getItem('role') !== 'STUDENT') {
+      router.push('/');
+    }
+  }, [router]);
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
@@ -104,7 +111,7 @@ const ActivitiesGrid = () => {
     }
 
     setStartingActivity(activityId);
-    
+
     try {
       // First request: Start the activity
       const startResponse = await fetch(`http://localhost:8085/api/progress/start/${activityId}`, {
@@ -156,7 +163,7 @@ const ActivitiesGrid = () => {
 
       const updatedProgressData: ProgressResponse = await updateResponse.json();
       console.log('Activity progress updated:', updatedProgressData);
-      
+
       // Navigate to the activity page
       router.push(activityLink);
     } catch (err) {
@@ -213,11 +220,10 @@ const ActivitiesGrid = () => {
               <button
                 onClick={() => handleStartLearning(activity.id, activity.link)}
                 disabled={startingActivity === activity.id}
-                className={`w-full py-2 rounded transition ${
-                  startingActivity === activity.id
+                className={`w-full py-2 rounded transition ${startingActivity === activity.id
                     ? 'bg-gray-400 cursor-not-allowed'
                     : 'bg-blue-500 hover:bg-blue-600 text-white'
-                }`}
+                  }`}
               >
                 {startingActivity === activity.id ? 'Starting...' : 'Start Learning'}
               </button>
