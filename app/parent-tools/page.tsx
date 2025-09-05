@@ -1,8 +1,11 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { LineChart, Line, PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { Leaf, Recycle, Clock, Trophy, Zap, Calendar, ChevronDown, X, Plus } from 'lucide-react';
+import Navbar from '../components/Layout/Navbar';
+import Footer from '../components/Layout/Footer';
 
 const colors = ['#2ecc71', '#3498db', '#f1c40f', '#e74c3c'];
 
@@ -23,13 +26,26 @@ const ParentTools = () => {
   const [newChildUsername, setNewChildUsername] = useState('');
   const [newChildEmail, setNewChildEmail] = useState('');
   const [newChildPassword, setNewChildPassword] = useState('');
+  const router = useRouter();
+
+  // Check if user is logged in
+  useEffect(() => {
+    const token = localStorage.getItem('authToken');
+    const parentId = localStorage.getItem('userid');
+    
+    if (!token || !parentId) {
+      router.push('/login');
+    }
+  }, [router]);
 
   const parentId = localStorage.getItem('userid');
   const token = localStorage.getItem('authToken');
   
   useEffect(() => {
+    if (!token || !parentId) return;
+    
     fetchChildren();
-  }, []);
+  }, [token, parentId]);
 
   const fetchChildren = async () => {
     try {
@@ -41,6 +57,15 @@ const ParentTools = () => {
           }
         }
       );
+      
+      if (response.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userid');
+        router.push('/login');
+        return;
+      }
+      
       const childrenData = await response.json();
       setChildren(childrenData);
       if (childrenData.length > 0) {
@@ -54,9 +79,9 @@ const ParentTools = () => {
   };
 
   useEffect(() => {
-    const fetchChildProgress = async () => {
-      if (!selectedChild) return;
+    if (!selectedChild || !token) return;
 
+    const fetchChildProgress = async () => {
       try {
         const response = await fetch(
           `http://localhost:8085/api/progress/child/${selectedChild.id}`,
@@ -66,6 +91,15 @@ const ParentTools = () => {
             }
           }
         );
+        
+        if (response.status === 401) {
+          // Token is invalid, redirect to login
+          localStorage.removeItem('authToken');
+          localStorage.removeItem('userid');
+          router.push('/login');
+          return;
+        }
+        
         const progressData = await response.json();
         
         const transformedData = {
@@ -100,7 +134,7 @@ const ParentTools = () => {
     };
 
     fetchChildProgress();
-  }, [selectedChild]);
+  }, [selectedChild, token, router]);
 
   const handleAddChild = async (e) => {
     e.preventDefault();
@@ -121,6 +155,14 @@ const ParentTools = () => {
           parentId: parentId
         })
       });
+
+      if (response.status === 401) {
+        // Token is invalid, redirect to login
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userid');
+        router.push('/login');
+        return;
+      }
 
       if (response.ok) {
         setNewChildName('');
@@ -157,12 +199,23 @@ const ParentTools = () => {
     },
   ];
 
+  // Check if user is logged in before rendering
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('authToken');
+    const parentId = localStorage.getItem('userid');
+    
+    if (!token || !parentId) {
+      return null; // or a loading spinner, the useEffect will redirect
+    }
+  }
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-black">
+      <Navbar />
       <main className="flex-grow py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
@@ -376,7 +429,7 @@ const ParentTools = () => {
 
       {/* Add Child Modal */}
       {showAddChildModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl shadow-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-2xl font-bold text-gray-800">Add New Child</h2>
@@ -464,6 +517,7 @@ const ParentTools = () => {
           </div>
         </div>
       )}
+      <Footer />
     </div>
   );
 };

@@ -147,7 +147,7 @@ export default function Login() {
                     } else {
                         // Fallback to the selected user type
                         if (formData.userType === 'PARENT') {
-                            router.push('/parent/dashboard');
+                            router.push('/parent-tools');
                         } else {
                             router.push('/kid/dashboard');
                         }
