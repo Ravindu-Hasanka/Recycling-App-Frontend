@@ -19,11 +19,9 @@ const ParentTools = () => {
   const [loading, setLoading] = useState(true);
   const [progressData, setProgressData] = useState(null);
 
-  // Hardcoded values - replace with actual values from your auth system
   const parentId = '68ba45d460f70973b00e807f';
   const token = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJEYXN1blRoYXRoc2FyYSIsInJvbGVzIjpbIlJPTEVfUEFSRU5UIl0sImlhdCI6MTc1NzA1MTMzOSwiZXhwIjoxNzU3MTM3NzM5fQ.whQQGFf0EAR-aNfQnXFiX-PZpTdjcpu0cy2k7xLsQCU';
 
-  // Fetch children list
   useEffect(() => {
     const fetchChildren = async () => {
       try {
@@ -50,7 +48,6 @@ const ParentTools = () => {
     fetchChildren();
   }, []);
 
-  // Fetch child progress when selected child changes
   useEffect(() => {
     const fetchChildProgress = async () => {
       if (!selectedChild) return;
@@ -66,17 +63,15 @@ const ParentTools = () => {
         );
         const progressData = await response.json();
         
-        // Transform API data to match your UI structure
         const transformedData = {
           stats: {
             totalPoints: progressData.reduce((total, item) => total + (item.marks?.[0] || 0), 0),
-            itemsRecycled: progressData.length * 10, // Example calculation
-            dayStreak: Math.floor(progressData.length / 2) // Example calculation
+            itemsRecycled: progressData.length * 10,
+            dayStreak: Math.floor(progressData.length / 2) 
           },
           progressData: [
             { week: 'Week 1', points: progressData[0]?.marks?.[0] || 0 },
             { week: 'Week 2', points: progressData[1]?.marks?.[0] || 0 },
-            // Add more weeks as needed based on your data
           ],
           wasteTypeData: [
             { name: 'Plastic', value: 45 },
