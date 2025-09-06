@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 
 export default function PlaygroundGame() {
   const [gameState, setGameState] = useState({
@@ -15,7 +17,27 @@ export default function PlaygroundGame() {
     gameComplete: false
   });
 
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   const items = [
     {
@@ -97,7 +119,7 @@ export default function PlaygroundGame() {
         const nextItem = prev.currentItem + 1;
         const rewardUnlocked = nextItem >= items.length && prev.score >= items.length - 1;
         const gameComplete = nextItem >= items.length;
-        
+
         return {
           ...prev,
           showFeedback: false,
@@ -146,19 +168,32 @@ export default function PlaygroundGame() {
             </p>
           )}
           <div className="flex justify-center gap-4">
-                <button
-                  onClick={resetGame}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105"
-                >
-                  Play Again
-                </button>
-                <button
-                  onClick={() => router.push('/story/animation/4')}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105"
-                >
-                  Continue
-                </button>
-              </div>
+            <button
+              onClick={resetGame}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105"
+            >
+              Play Again
+            </button>
+            <button
+              onClick={async () => {
+                if (story) {
+                  try {
+                    await updateProgress({
+                      storyId: story.id,
+                      score: gameState.score,
+                    });
+                    console.log("Progress updated!");
+                  } catch (err) {
+                    console.error("Failed to update progress", err);
+                  }
+                }
+                router.push("/story/animation/4");
+              }}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -185,14 +220,14 @@ export default function PlaygroundGame() {
             <div className="absolute bottom-0 left-0 w-full h-2/5 bg-green-300"></div>
             <div className="absolute top-10 left-10 w-24 h-24 bg-red-500 rounded-full opacity-20"></div>
             <div className="absolute top-20 right-16 w-16 h-16 bg-yellow-400 rounded-full opacity-20"></div>
-            
+
             {/* Playground equipment */}
             <div className="absolute bottom-40 left-1/4 w-12 h-48 bg-gray-800"></div>
             <div className="absolute bottom-40 left-1/4 -ml-6 w-24 h-8 bg-gray-800 rounded-full"></div>
-            
+
             <div className="absolute bottom-40 right-1/4 w-12 h-48 bg-gray-800"></div>
             <div className="absolute bottom-40 right-1/4 -mr-6 w-24 h-8 bg-gray-800 rounded-full"></div>
-            
+
             {/* Bins */}
             <div className="absolute bottom-0 left-1/4 transform -translate-x-1/2 mb-4 w-16 h-20 bg-gray-400 rounded-t-lg"></div>
             <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-4 w-16 h-20 bg-blue-400 rounded-t-lg"></div>
@@ -228,25 +263,25 @@ export default function PlaygroundGame() {
             {/* Choice buttons */}
             {!gameState.showFeedback && (
               <div className="grid grid-cols-2 gap-4 mb-8 w-full max-w-md">
-                <button 
+                <button
                   onClick={() => handleChoice('waste')}
                   className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-4 px-4 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   🗑️ General Waste
                 </button>
-                <button 
+                <button
                   onClick={() => handleChoice('recyclable')}
                   className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-4 px-4 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   ♻️ Recyclable
                 </button>
-                <button 
+                <button
                   onClick={() => handleChoice('compost')}
                   className="bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-4 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   🍃 Compost
                 </button>
-                <button 
+                <button
                   onClick={() => handleChoice('not-waste')}
                   className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-4 px-4 rounded-xl text-lg transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
@@ -269,8 +304,8 @@ export default function PlaygroundGame() {
 
             {/* Progress indicator */}
             <div className="w-full max-w-md bg-gray-200 rounded-full h-4 mb-4">
-              <div 
-                className="bg-green-500 h-4 rounded-full transition-all duration-500" 
+              <div
+                className="bg-green-500 h-4 rounded-full transition-all duration-500"
                 style={{ width: `${((gameState.currentItem + 1) / items.length) * 100}%` }}
               ></div>
             </div>

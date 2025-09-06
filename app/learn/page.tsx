@@ -15,7 +15,7 @@ interface Activity {
   active: boolean;
 }
 
-interface ProgressResponse {
+export interface ProgressResponse {
   id: string;
   userId: string;
   storyId: string;

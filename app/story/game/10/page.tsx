@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 
 interface QuizQuestion {
   id: number;
@@ -38,7 +40,27 @@ const SchoolProjectGame = () => {
     streak: 0,
     maxStreak: 0
   });
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   // Quiz questions data
   const [quizQuestions] = useState<QuizQuestion[]>([
@@ -236,18 +258,18 @@ const SchoolProjectGame = () => {
                       onClick={() => handleOptionSelect(option.id, option.isCorrect)}
                       disabled={showFeedback}
                       className={`p-4 rounded-lg text-left transition-all duration-200 ${selectedOption === option.id
-                          ? option.isCorrect
-                            ? 'bg-green-100 border-2 border-green-500'
-                            : 'bg-red-100 border-2 border-red-500'
-                          : 'bg-white border border-gray-200 hover:border-blue-300'
+                        ? option.isCorrect
+                          ? 'bg-green-100 border-2 border-green-500'
+                          : 'bg-red-100 border-2 border-red-500'
+                        : 'bg-white border border-gray-200 hover:border-blue-300'
                         } ${showFeedback && option.isCorrect ? 'bg-green-100 border-2 border-green-500' : ''}`}
                     >
                       <div className="flex items-center">
                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${selectedOption === option.id
-                            ? option.isCorrect
-                              ? 'bg-green-500 text-white'
-                              : 'bg-red-500 text-white'
-                            : 'bg-gray-100 text-gray-700'
+                          ? option.isCorrect
+                            ? 'bg-green-500 text-white'
+                            : 'bg-red-500 text-white'
+                          : 'bg-gray-100 text-gray-700'
                           } ${showFeedback && option.isCorrect ? 'bg-green-500 text-white' : ''}`}>
                           {option.id}
                         </div>
@@ -320,7 +342,20 @@ const SchoolProjectGame = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => router.push('/story/animation/11')}
+                  onClick={async () => {
+                    if (story) {
+                      try {
+                        await updateProgress({
+                          storyId: story.id,
+                          score: score,
+                        });
+                        console.log("Progress updated!");
+                      } catch (err) {
+                        console.error("Failed to update progress", err);
+                      }
+                    }
+                    router.push("/story/animation/11");
+                  }}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
                 >
                   Continue

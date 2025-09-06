@@ -1,5 +1,7 @@
 'use client';
 
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -29,7 +31,27 @@ const MarketMysteryGame = () => {
   const [showReward, setShowReward] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [currentItem, setCurrentItem] = useState<MarketItem | null>(null);
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   // Market items data with realistic images
   const [marketItems] = useState<MarketItem[]>([
@@ -112,7 +134,7 @@ const MarketMysteryGame = () => {
   const handleDrop = (e: React.DragEvent, binType: string) => {
     e.preventDefault();
     if (!currentItem) return;
-    
+
     if (currentItem.type === binType) {
       // Correct bin - add to score
       setScore(prev => prev + 10);
@@ -155,7 +177,7 @@ const MarketMysteryGame = () => {
           <p className="text-sm md:text-lg text-orange-600">
             Help vendors separate organic waste from recyclables!
           </p>
-          
+
           <div className="flex justify-center items-center mt-4 gap-4 md:gap-6">
             <div className="bg-white rounded-full px-3 py-1 md:px-4 md:py-2 shadow-md flex items-center">
               <span className="text-lg mr-1">⭐</span>
@@ -237,33 +259,46 @@ const MarketMysteryGame = () => {
               <p className="text-orange-600 mb-4">
                 Final Score: {score} | Time Bonus: {timeLeft * 5}
               </p>
-              
+
               <div className="my-6">
                 <div className="inline-block bg-orange-100 rounded-full p-4 shadow-lg">
                   <span className="text-4xl">🛍️</span>
                 </div>
                 <p className="text-orange-700 font-bold mt-2">Eco-Basket Unlocked!</p>
               </div>
-              
+
               <div className="market-celebration flex justify-center gap-4 text-3xl my-4">
                 <span className="animate-bounce">✨</span>
                 <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
                 <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>✨</span>
               </div>
-              
+
               <div className="flex justify-center gap-4">
-              <button
-                onClick={resetGame}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
-              >
-                Play Again
-              </button>
-              <button
-                onClick={() => router.push('/story/animation/7')}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
-              >
-                Continue
-              </button>
+                <button
+                  onClick={resetGame}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
+                >
+                  Play Again
+                </button>
+                <button
+                  onClick={async () => {
+                    if (story) {
+                      try {
+                        await updateProgress({
+                          storyId: story.id,
+                          score: score,
+                        });
+                        console.log("Progress updated!");
+                      } catch (err) {
+                        console.error("Failed to update progress", err);
+                      }
+                    }
+                    router.push("/story/animation/7");
+                  }}
+                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
+                >
+                  Continue
+                </button>
               </div>
             </div>
           )}
@@ -271,10 +306,10 @@ const MarketMysteryGame = () => {
           {gameActive && (
             <>
               {/* Market Scene */}
-              <div 
+              <div
                 className="relative rounded-lg p-4 mb-6 md:mb-8 h-64 border-2 border-orange-300 overflow-hidden bg-cover bg-center"
                 style={{ backgroundImage: "url('/images/market-background.jpg')" }}
-              >                
+              >
                 {/* Mixed waste items */}
                 <div className="absolute top-4 left-0 right-0 flex justify-center gap-4">
                   {unsortedItems.map(item => (
@@ -320,7 +355,7 @@ const MarketMysteryGame = () => {
                 {bins.map(bin => (
                   <div
                     key={bin.type}
-                    onClick={() => currentItem && handleDrop({ preventDefault: () => {} } as React.DragEvent, bin.type)}
+                    onClick={() => currentItem && handleDrop({ preventDefault: () => { } } as React.DragEvent, bin.type)}
                     onDrop={(e) => handleDrop(e, bin.type)}
                     onDragOver={allowDrop}
                     className={`${bin.color} rounded-lg p-4 md:p-6 text-center min-h-40 flex flex-col items-center justify-end transition-all hover:opacity-90 border-2 border-gray-700 shadow-md relative cursor-pointer`}
@@ -329,7 +364,7 @@ const MarketMysteryGame = () => {
                       {bin.icon}
                     </div>
                     <h3 className="text-white font-bold text-lg md:text-xl mb-2">{bin.label}</h3>
-                    
+
                     {/* Items in Bin */}
                     <div className="flex flex-wrap justify-center gap-1 mt-2">
                       {sortedItems.map(itemId => {
@@ -337,15 +372,15 @@ const MarketMysteryGame = () => {
                         return item && item.type === bin.type ? (
                           <div key={itemId} className="w-6 h-6 rounded flex items-center justify-center bg-white shadow-sm text-xs">
                             {item.image ? (
-                          <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
-                        ) : (
-                          item.type === 'organic' ? '🍌' : '♻️'
-                        )}
+                              <img src={item.image} alt={item.name} className="w-full h-full object-contain" />
+                            ) : (
+                              item.type === 'organic' ? '🍌' : '♻️'
+                            )}
                           </div>
                         ) : null;
                       })}
                     </div>
-                    
+
                     {/* Drop hint */}
                     <div className="absolute inset-0 bg-green-500 bg-opacity-50 flex items-center justify-center rounded-lg opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
                       <span className="text-white font-bold text-lg">Drop here</span>
@@ -363,7 +398,7 @@ const MarketMysteryGame = () => {
             <span className="mr-2">🌱</span> Composting Facts
           </h3>
           <p className="text-amber-700 text-sm md:text-base">
-            Organic waste in landfills produces methane, a potent greenhouse gas. 
+            Organic waste in landfills produces methane, a potent greenhouse gas.
             Composting instead reduces emissions and creates nutrient-rich soil for gardens!
           </p>
         </div>

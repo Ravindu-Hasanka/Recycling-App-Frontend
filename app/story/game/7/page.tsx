@@ -1,5 +1,7 @@
 'use client';
 
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -32,7 +34,27 @@ const FarmyardFixGame = () => {
   const [showHint, setShowHint] = useState(false);
   const [currentItem, setCurrentItem] = useState<FarmItem | null>(null);
   const [cropHealth, setCropHealth] = useState(100); // Percentage of crop health
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   // Farm items data with realistic images
   const [farmItems] = useState<FarmItem[]>([
@@ -274,7 +296,20 @@ const FarmyardFixGame = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => router.push('/story/animation/8')}
+                  onClick={async () => {
+                    if (story) {
+                      try {
+                        await updateProgress({
+                          storyId: story.id,
+                          score: score,
+                        });
+                        console.log("Progress updated!");
+                      } catch (err) {
+                        console.error("Failed to update progress", err);
+                      }
+                    }
+                    router.push("/story/animation/8");
+                  }}
                   className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
                 >
                   Continue

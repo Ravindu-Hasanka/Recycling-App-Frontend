@@ -3,13 +3,60 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Play, Volume2, VolumeX, SkipForward } from 'lucide-react';
+import { Story } from '@/app/types/story';
+import { getStoryByTitle } from '@/app/api/story-api';
 
 export default function VideoIntroPage() {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The City Streets");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
+
+  useEffect(() => {
+  const entroll = async () => {
+    if (!story) return;
+
+    try {
+      console.log("Enrolling to story...");
+      
+      const progressData = await entrollToStory(story.id);
+
+      console.log('Activity started:', progressData);
+    } catch (error: any) {
+      if (error.message === "Unauthorized") {
+        // Token invalid or expired
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userid');
+        router.push('/login');
+      } else {
+        console.error('Error enrolling to story:', error);
+      }
+    }
+  };
+
+  entroll();
+}, [story]);
 
   // Show skip button after 3 seconds
   useEffect(() => {
@@ -120,4 +167,8 @@ export default function VideoIntroPage() {
       </div>
     </div>
   );
+}
+
+function entrollToStory(id: any) {
+  throw new Error('Function not implemented.');
 }

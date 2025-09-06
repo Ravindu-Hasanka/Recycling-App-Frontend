@@ -1,5 +1,7 @@
 'use client';
 
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -57,7 +59,27 @@ const RecyclingFactoryGame = () => {
   const [conveyorItems, setConveyorItems] = useState<FactoryItem[]>([]);
   const [sortedItems, setSortedItems] = useState<number[]>([]);
   const [incorrectItems, setIncorrectItems] = useState<number[]>([]);
-  const router = useRouter(); 
+  const [story, setStory] = useState<Story | null>(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   // Initialize game
   useEffect(() => {
@@ -72,7 +94,7 @@ const RecyclingFactoryGame = () => {
       setShowReward(false);
       setMachineStatus('running');
       setConveyorSpeed(1);
-      
+
       // Add initial items to conveyor
       const initialItems = [...factoryItems].sort(() => 0.5 - Math.random()).slice(0, 3);
       setConveyorItems(initialItems);
@@ -97,15 +119,15 @@ const RecyclingFactoryGame = () => {
   // Conveyor belt movement
   useEffect(() => {
     let conveyorTimer: NodeJS.Timeout;
-    
+
     if (gameActive && machineStatus !== 'jammed') {
       conveyorTimer = setInterval(() => {
         // Add new items periodically
         if (conveyorItems.length < 5 && Math.random() > 0.7) {
-          const remainingItems = factoryItems.filter(item => 
+          const remainingItems = factoryItems.filter(item =>
             !conveyorItems.some(ci => ci.id === item.id) && !sortedItems.includes(item.id)
           );
-          
+
           if (remainingItems.length > 0) {
             const newItem = remainingItems[Math.floor(Math.random() * remainingItems.length)];
             setConveyorItems(prev => [...prev, newItem]);
@@ -113,7 +135,7 @@ const RecyclingFactoryGame = () => {
         }
       }, 2000 / conveyorSpeed);
     }
-    
+
     return () => clearInterval(conveyorTimer);
   }, [gameActive, conveyorItems, factoryItems, sortedItems, conveyorSpeed, machineStatus]);
 
@@ -134,7 +156,7 @@ const RecyclingFactoryGame = () => {
       setMachineStatus('jammed');
       // Penalty for jamming the machine
       setScore(prev => Math.max(0, prev - 20));
-      
+
       // Unjam after a delay
       setTimeout(() => {
         if (gameActive) {
@@ -163,16 +185,16 @@ const RecyclingFactoryGame = () => {
     e.preventDefault();
     const itemId = parseInt(e.dataTransfer.getData('text/plain'));
     const item = factoryItems.find(item => item.id === itemId);
-    
+
     if (!item) return;
-    
+
     if (item.type === binType) {
       // Correct bin - add to score
       setScore(prev => prev + 10);
       setItemsSorted(prev => prev + 1);
       setSortedItems(prev => [...prev, item.id]);
       setConveyorItems(prev => prev.filter(ci => ci.id !== item.id));
-      
+
       // Increase conveyor speed for challenge
       if (itemsSorted % 3 === 0 && conveyorSpeed < 2.5) {
         setConveyorSpeed(prev => prev + 0.2);
@@ -212,7 +234,7 @@ const RecyclingFactoryGame = () => {
           <p className="text-sm md:text-lg text-gray-300">
             Keep the machines running by sorting items correctly!
           </p>
-          
+
           <div className="flex justify-center items-center mt-4 gap-4 md:gap-6">
             <div className="bg-gray-700 rounded-full px-3 py-1 md:px-4 md:py-2 shadow-md flex items-center">
               <span className="text-lg mr-1 text-yellow-400">⭐</span>
@@ -253,13 +275,12 @@ const RecyclingFactoryGame = () => {
 
           {/* Machine status indicator */}
           <div className="flex items-center justify-center mb-6">
-            <div className={`px-4 py-2 rounded-full ${
-              machineStatus === 'jammed' ? 'bg-red-600' : 
-              machineStatus === 'optimal' ? 'bg-green-600' : 'bg-blue-600'
-            }`}>
+            <div className={`px-4 py-2 rounded-full ${machineStatus === 'jammed' ? 'bg-red-600' :
+                machineStatus === 'optimal' ? 'bg-green-600' : 'bg-blue-600'
+              }`}>
               <span className="text-white font-bold">
-                {machineStatus === 'jammed' ? 'MACHINE JAMMED!' : 
-                 machineStatus === 'optimal' ? 'OPTIMAL PERFORMANCE' : 'RUNNING'}
+                {machineStatus === 'jammed' ? 'MACHINE JAMMED!' :
+                  machineStatus === 'optimal' ? 'OPTIMAL PERFORMANCE' : 'RUNNING'}
               </span>
             </div>
           </div>
@@ -307,33 +328,46 @@ const RecyclingFactoryGame = () => {
               <p className="text-gray-300 mb-4">
                 Final Score: {score} | Time Bonus: {timeLeft * 5}
               </p>
-              
+
               <div className="my-6">
                 <div className="inline-block bg-gray-600 rounded-full p-4 shadow-lg">
                   <span className="text-4xl">⚙️</span>
                 </div>
                 <p className="text-white font-bold mt-2">Gear Badge Unlocked!</p>
               </div>
-              
+
               <div className="factory-celebration flex justify-center gap-4 text-3xl my-4">
                 <span className="animate-bounce">✨</span>
                 <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
                 <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>✨</span>
               </div>
-              
+
               <div className="flex justify-center gap-4">
-              <button
-                onClick={resetGame}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
-              >
-                Play Again
-              </button>
-              <button
-                onClick={() => router.push('/story/animation/10')}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
-              >
-                Continue
-              </button>
+                <button
+                  onClick={resetGame}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
+                >
+                  Play Again
+                </button>
+                <button
+                  onClick={async () => {
+                    if (story) {
+                      try {
+                        await updateProgress({
+                          storyId: story.id,
+                          score: score,
+                        });
+                        console.log("Progress updated!");
+                      } catch (err) {
+                        console.error("Failed to update progress", err);
+                      }
+                    }
+                    router.push("/story/animation/10");
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
+                >
+                  Continue
+                </button>
               </div>
             </div>
           )}
@@ -344,22 +378,22 @@ const RecyclingFactoryGame = () => {
               <div className="relative rounded-lg p-4 mb-6 md:mb-8 h-48 border-2 border-gray-600 overflow-hidden bg-gray-800">
                 {/* Conveyor belt texture */}
                 <div className="absolute inset-0 bg-repeat-x bg-auto opacity-20 conveyor-texture"></div>
-                
+
                 {/* Machine elements */}
                 <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center text-2xl">
                   ⚙️
                 </div>
-                
+
                 <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center text-2xl">
                   ⚙️
                 </div>
-                
+
                 {/* Conveyor belt */}
                 <div className="absolute top-1/2 left-8 right-8 h-8 bg-gray-500 rounded-lg transform -translate-y-1/2"></div>
-                
+
                 {/* Moving conveyor animation */}
                 <div className={`absolute top-1/2 left-0 right-0 h-8 transform -translate-y-1/2 conveyor-move ${machineStatus === 'jammed' ? 'paused' : ''}`}></div>
-                
+
                 {/* Conveyor items */}
                 <div className="absolute top-1/2 left-8 right-8 h-16 transform -translate-y-1/2 flex items-center justify-start gap-8">
                   {conveyorItems.map(item => (
@@ -405,22 +439,22 @@ const RecyclingFactoryGame = () => {
                     </div>
                     <h3 className="text-white font-bold text-sm mb-1">{bin.label}</h3>
                     <p className="text-white text-xs opacity-80">{bin.description}</p>
-                    
+
                     {/* Items in Bin */}
                     <div className="flex flex-wrap justify-center gap-1 mt-2">
                       {sortedItems.map(itemId => {
                         const item = factoryItems.find(i => i.id === itemId);
                         return item && item.type === bin.type ? (
                           <div key={itemId} className="w-4 h-4 rounded flex items-center justify-center bg-white shadow-sm text-xs">
-                            {item.type === 'plastic' ? '🥤' : 
-                             item.type === 'paper' ? '📦' : 
-                             item.type === 'glass' ? '🥃' : 
-                             item.type === 'metal' ? '🥫' : '📱'}
+                            {item.type === 'plastic' ? '🥤' :
+                              item.type === 'paper' ? '📦' :
+                                item.type === 'glass' ? '🥃' :
+                                  item.type === 'metal' ? '🥫' : '📱'}
                           </div>
                         ) : null;
                       })}
                     </div>
-                    
+
                     {/* Drop hint */}
                     <div className="absolute inset-0 bg-green-500 bg-opacity-50 flex items-center justify-center rounded-lg opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
                       <span className="text-white font-bold text-sm">Drop here</span>
@@ -438,7 +472,7 @@ const RecyclingFactoryGame = () => {
             <span className="mr-2">🏭</span> Recycling Facts
           </h3>
           <p className="text-blue-200 text-sm md:text-base">
-            Recycling plants use advanced machinery to sort and process materials. Proper sorting at home 
+            Recycling plants use advanced machinery to sort and process materials. Proper sorting at home
             helps these machines run efficiently and reduces contamination in recycling streams!
           </p>
         </div>

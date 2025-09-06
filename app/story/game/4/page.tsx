@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 
 export default function MagicalForestGame() {
   const [gameState, setGameState] = useState({
@@ -27,7 +29,27 @@ export default function MagicalForestGame() {
 
   const [draggedItem, setDraggedItem] = useState<Item | null>(null);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   const paperItems = items.filter(item => item.type === 'paper');
   const totalPaperItems = paperItems.length;
@@ -172,7 +194,20 @@ export default function MagicalForestGame() {
               Play Again
             </button>
             <button
-              onClick={() => router.push('/story/animation/5')}
+              onClick={async () => {
+                if (story) {
+                  try {
+                    await updateProgress({
+                      storyId: story.id,
+                      score: gameState.score,
+                    });
+                    console.log("Progress updated!");
+                  } catch (err) {
+                    console.error("Failed to update progress", err);
+                  }
+                }
+                router.push("/story/animation/5");
+              }}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-full text-lg transition-all duration-300 transform hover:scale-105 mt-4"
             >
               Continue
