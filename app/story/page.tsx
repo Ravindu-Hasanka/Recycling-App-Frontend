@@ -1,22 +1,72 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Play, Volume2, VolumeX, SkipForward } from 'lucide-react';
+import { entrollToStory, getStoryByTitle } from '../api/story-api';
+import { Story } from '../types/story';
+import { i } from 'framer-motion/client';
+import { ProgressResponse } from '../learn/page';
 
 export default function VideoIntroPage() {
   const [videoPlaying, setVideoPlaying] = useState(false);
   const [showSkip, setShowSkip] = useState(false);
   const [soundEnabled, setSoundEnabled] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
+
+  useEffect(() => {
+  const entroll = async () => {
+    if (!story) return;
+
+    try {
+      console.log("Enrolling to story...");
+      
+      const progressData = await entrollToStory(story.id);
+
+      console.log('Activity started:', progressData);
+    } catch (error: any) {
+      if (error.message === "Unauthorized") {
+        // Token invalid or expired
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('userid');
+        router.push('/login');
+      } else {
+        console.error('Error enrolling to story:', error);
+      }
+    }
+  };
+
+  entroll();
+}, [story]);
+
 
   // Show skip button after 3 seconds
   useEffect(() => {
     const skipTimer = setTimeout(() => {
       setShowSkip(true);
     }, 3000);
-    
+
     return () => clearTimeout(skipTimer);
   }, []);
 
@@ -112,7 +162,7 @@ export default function VideoIntroPage() {
 
         {/* Progress bar */}
         <div className="w-full max-w-2xl bg-white/20 rounded-full h-2 mb-4">
-          <div 
+          <div
             className="bg-green-500 h-2 rounded-full transition-all duration-300"
             style={{ width: videoRef.current ? `${(videoRef.current.currentTime / videoRef.current.duration) * 100}%` : '0%' }}
           ></div>

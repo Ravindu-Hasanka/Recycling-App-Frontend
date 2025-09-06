@@ -1,5 +1,7 @@
 'use client';
 
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 
@@ -29,11 +31,31 @@ const RiverRescueGame = () => {
   const [showReward, setShowReward] = useState(false);
   const [showHint, setShowHint] = useState(false);
 
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
-  
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
+
   // Refs for DOM elements
   const riverRef = useRef<HTMLDivElement>(null);
-  
+
   // River items data
   const [riverItems, setRiverItems] = useState<RiverItem[]>([
     { id: 1, type: 'plastic', name: 'Plastic Bottle', icon: '🥤', position: { x: 5, y: 20 } },
@@ -115,7 +137,7 @@ const RiverRescueGame = () => {
     e.preventDefault();
     const itemId = parseInt(e.dataTransfer.getData('text/plain'));
     const item = riverItems.find(item => item.id === itemId);
-    
+
     if (item && item.type === binType) {
       // Correct bin - add to score and remove from river
       setScore(prev => prev + 10);
@@ -155,7 +177,7 @@ const RiverRescueGame = () => {
           <p className="text-sm md:text-lg text-green-600">
             Help clean the river before the trash harms the marine life!
           </p>
-          
+
           <div className="flex justify-center items-center mt-4 gap-4 md:gap-6">
             <div className="bg-white rounded-full px-3 py-1 md:px-4 md:py-2 shadow-md flex items-center">
               <span className="text-lg mr-1">⭐</span>
@@ -237,20 +259,20 @@ const RiverRescueGame = () => {
               <p className="text-green-600 mb-4">
                 Final Score: {score} | Time Bonus: {timeLeft * 5}
               </p>
-              
+
               <div className="my-6">
                 <div className="inline-block bg-yellow-100 rounded-full p-4 shadow-lg">
                   <span className="text-4xl">🏅</span>
                 </div>
                 <p className="text-amber-700 font-bold mt-2">EcoHero Badge Unlocked!</p>
               </div>
-              
+
               <div className="fish-dance flex justify-center gap-4 text-3xl my-4">
                 <span className="animate-bounce">🐟</span>
                 <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🐠</span>
                 <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🐡</span>
               </div>
-              
+
               <div className="flex justify-center gap-4">
                 <button
                   onClick={resetGame}
@@ -259,7 +281,20 @@ const RiverRescueGame = () => {
                   Play Again
                 </button>
                 <button
-                  onClick={() => router.push('/story/animation/3')}
+                  onClick={async () => {
+                    if (story) {
+                      try {
+                        await updateProgress({
+                          storyId: story.id,
+                          score: score,
+                        });
+                        console.log("Progress updated!");
+                      } catch (err) {
+                        console.error("Failed to update progress", err);
+                      }
+                    }
+                    router.push("/story/animation/3");
+                  }}
                   className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105"
                 >
                   Continue
@@ -271,7 +306,7 @@ const RiverRescueGame = () => {
           {gameActive && (
             <>
               {/* River Scene with Ocean Background */}
-              <div 
+              <div
                 ref={riverRef}
                 className="relative rounded-lg p-4 mb-6 md:mb-8 h-64 border-2 border-blue-300 overflow-hidden bg-cover bg-center"
                 style={{ backgroundImage: "url('/images/ocean-bg.jpg')" }}
@@ -282,14 +317,14 @@ const RiverRescueGame = () => {
                   <div className="w-6 h-2 bg-gray-800"></div>
                   <div className="w-6 h-2 bg-gray-800"></div>
                 </div>
-                
+
                 {/* Ducks */}
                 <div className="absolute bottom-4 left-1/4 text-3xl">🦆</div>
-                
+
                 {/* Fish */}
                 <div className="absolute bottom-10 left-1/2 text-2xl">🐟</div>
                 <div className="absolute top-16 left-1/3 text-2xl">🐠</div>
-                
+
                 {/* Floating trash items - now static */}
                 {riverItems.map(item => (
                   !sortedItems.includes(item.id) && (
@@ -298,8 +333,8 @@ const RiverRescueGame = () => {
                       draggable
                       onDragStart={(e) => handleDragStart(e, item.id)}
                       className="absolute cursor-move z-10 transition-transform duration-200 hover:scale-110"
-                      style={{ 
-                        left: `${item.position.x}%`, 
+                      style={{
+                        left: `${item.position.x}%`,
                         top: `${item.position.y}%`,
                       }}
                     >
@@ -327,7 +362,7 @@ const RiverRescueGame = () => {
                       {bin.icon}
                     </div>
                     <h3 className="text-white font-bold text-sm md:text-lg mb-2">{bin.label}</h3>
-                    
+
                     {/* Items in Bin */}
                     <div className="flex flex-wrap justify-center gap-1 mt-2">
                       {sortedItems.map(itemId => {
@@ -339,7 +374,7 @@ const RiverRescueGame = () => {
                         ) : null;
                       })}
                     </div>
-                    
+
                     {/* Drop hint */}
                     <div className="absolute inset-0 bg-green-500 bg-opacity-50 flex items-center justify-center rounded-lg opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
                       <span className="text-white font-bold text-lg">Drop here</span>
@@ -361,7 +396,7 @@ const RiverRescueGame = () => {
             <span className="mr-2">🌍</span> Did You Know?
           </h3>
           <p className="text-yellow-700 text-sm md:text-base">
-            Plastic pollution in rivers and oceans harms over 600 marine species. By properly sorting trash, 
+            Plastic pollution in rivers and oceans harms over 600 marine species. By properly sorting trash,
             you're helping to protect aquatic life and keep our waterways clean!
           </p>
         </div>

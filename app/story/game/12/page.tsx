@@ -1,5 +1,7 @@
 'use client';
 
+import { getStoryByTitle, updateProgress } from '@/app/api/story-api';
+import { Story } from '@/app/types/story';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 
@@ -65,7 +67,27 @@ const GrandCelebrationGame = () => {
   const [unsortedItems, setUnsortedItems] = useState<FestivalItem[]>([]);
   const [litterbugItems, setLitterbugItems] = useState<FestivalItem[]>([]);
 
+  const [story, setStory] = useState<Story | null>(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const fetchStory = async () => {
+      try {
+        const storyData = await getStoryByTitle("The Messy Park");
+        setStory(storyData);
+      } catch (error: any) {
+        if (error.message === "Unauthorized") {
+          localStorage.removeItem("authToken");
+          localStorage.removeItem("userid");
+          router.push("/login");
+        } else {
+          console.error(error);
+        }
+      }
+    };
+
+    fetchStory();
+  }, []);
 
   // Initialize game
   useEffect(() => {
@@ -350,7 +372,20 @@ const GrandCelebrationGame = () => {
 
               {/* Go Home Button */}
               <button
-                onClick={() => router.push('/')}
+                onClick={async () => {
+                  if (story) {
+                    try {
+                      await updateProgress({
+                        storyId: story.id,
+                        score: score,
+                      });
+                      console.log("Progress updated!");
+                    } catch (err) {
+                      console.error("Failed to update progress", err);
+                    }
+                  }
+                  router.push("/");
+                }}
                 className="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md"
               >
                 Go Home
