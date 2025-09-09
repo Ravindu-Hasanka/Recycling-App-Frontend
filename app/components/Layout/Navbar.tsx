@@ -1,17 +1,30 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { MessageSquare } from 'lucide-react';
 import { Button } from '../ui/button';
 import { useRouter } from 'next/navigation';
 
-const Navbar = () => {
+const Navbar: React.FC = () => {
   const router = useRouter();
+  const [role, setRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem('role');
+    setRole(storedRole);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('role');
+    setRole(null);
     router.push('/login');
+  };
+
+  const handleLogin = () => {
+    localStorage.setItem('role', 'STUDENT');
+    setRole('STUDENT');
+    router.push('/');
   };
 
   return (
@@ -25,27 +38,36 @@ const Navbar = () => {
         <div className="hidden md:flex items-center space-x-8">
           <Link href="/" className="text-gray-700 hover:text-blue-500 transition-colors">Home</Link>
           <Link href="/story" className="text-gray-700 hover:text-blue-500 transition-colors">Eco Story</Link>
-          {localStorage.getItem('role') === 'STUDENT' && (
+          {role === 'STUDENT' && (
             <Link href="/learn" className="text-gray-700 hover:text-blue-500 transition-colors">Learn</Link>
           )}
           <Link href="/paths" className="text-gray-700 hover:text-blue-500 transition-colors">Paths</Link>
-          {localStorage.getItem('role') === 'PARENT' && (
+          {role === 'PARENT' && (
             <Link href="/parent-tools" className="text-gray-700 hover:text-blue-500 transition-colors">Parent Tools</Link>
           )}
           <Link href="/about" className="text-gray-700 hover:text-blue-500 transition-colors">About</Link>
         </div>
 
-        <div>
+        <div className="flex items-center">
           <Button className="bg-blue-500 hover:bg-blue-600">
             <span className="mr-2">?</span> Help
           </Button>
 
-          <Button
-            className="bg-red-500 hover:bg-red-600 text-white ml-4"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          {role ? (
+            <Button
+              className="bg-red-500 hover:bg-red-600 text-white ml-4"
+              onClick={handleLogout}
+            >
+              Logout
+            </Button>
+          ) : (
+            <Button
+              className="bg-green-500 hover:bg-green-600 text-white ml-4"
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
+          )}
         </div>
       </div>
     </nav>
