@@ -11,8 +11,11 @@ const Navbar: React.FC = () => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedRole = localStorage.getItem('authToken');
-    setRole(storedRole);
+    // const storedRole = localStorage.getItem('authToken');
+    // setRole(storedRole);
+
+    const role = localStorage.getItem('role');
+    setRole(role);
   }, []);
 
   const handleLogout = () => {
@@ -27,6 +30,8 @@ const Navbar: React.FC = () => {
     router.push('/login');
   };
 
+  console.log(role)
+
   return (
     <nav className="bg-white py-4 px-6 shadow-sm">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
@@ -40,6 +45,9 @@ const Navbar: React.FC = () => {
           <Link href="/story" className="text-gray-700 hover:text-blue-500 transition-colors">Eco Story</Link>
           {role === 'STUDENT' && (
             <Link href="/learn" className="text-gray-700 hover:text-blue-500 transition-colors">Learn</Link>
+          )}
+          {role === 'STUDENT' && (
+            <Link href="/course" className="text-gray-700 hover:text-blue-500 transition-colors">Course</Link>
           )}
           <Link href="/paths" className="text-gray-700 hover:text-blue-500 transition-colors">Paths</Link>
           {role === 'PARENT' && (
