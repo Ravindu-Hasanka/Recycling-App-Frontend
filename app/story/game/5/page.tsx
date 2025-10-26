@@ -264,7 +264,7 @@ const OceanAdventureGame = () => {
                 <div className="inline-block bg-blue-100 rounded-full p-4 shadow-lg">
                   <span className="text-4xl">🔱</span>
                 </div>
-                <p className="text-blue-700 font-bold mt-2">Ocean Amulet Unlocked!</p>
+                <p className="text-blue-700 font-bold mt-2">Ocean Amulet Unlocked</p>
               </div>
 
               <div className="turtle-swim flex justify-center gap-4 text-3xl my-4">
@@ -293,7 +293,7 @@ const OceanAdventureGame = () => {
                         console.error("Failed to update progress", err);
                       }
                     }
-                    router.push("/story/animation/6");
+                    router.push("/story/animation/12");
                   }}
                   className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
                 >

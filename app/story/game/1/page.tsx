@@ -134,7 +134,7 @@ const RealisticRecyclingGame = () => {
         <header className="text-center mb-8">
           <h1 className="text-4xl font-bold text-green-800 mb-2">Recycling Park Adventure</h1>
           <p className="text-lg text-green-600">
-            Help EcoHero clean the park by sorting the trash into the right bins!
+            Help EcoHero clean the park by sorting the trash into the right bins
           </p>
           <div className="flex justify-center items-center mt-4 gap-6">
             <div className="bg-white rounded-full px-4 py-2 shadow-md">
@@ -278,7 +278,7 @@ const RealisticRecyclingGame = () => {
         <div className="bg-yellow-50 rounded-xl p-6 border border-yellow-200 mb-6">
           <h3 className="text-lg font-bold text-yellow-800 mb-2">Did You Know? 🌍</h3>
           <p className="text-yellow-700">
-            Recycling helps keep our parks clean and protects animals from harmful trash!
+            Recycling helps keep our parks clean and protects animals from harmful trash
             When we recycle correctly, we save energy and reduce pollution.
           </p>
         </div>

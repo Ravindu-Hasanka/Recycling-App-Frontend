@@ -224,7 +224,7 @@ export default function MagicalForestGame() {
         {/* Header */}
         <header className="text-center my-6">
           <h1 className="text-4xl font-bold text-green-800">EcoHero: The Magical Forest</h1>
-          <p className="text-lg text-gray-600 mt-2">Help restore the forest by recycling paper waste!</p>
+          <p className="text-lg text-gray-600 mt-2">Help restore the forest by recycling paper waste</p>
           <div className="flex justify-center items-center gap-4 mt-4">
             <div className="bg-green-200 inline-block px-4 py-2 rounded-full">
               <span className="text-green-800 font-semibold">Score: {gameState.score}</span>
@@ -298,7 +298,7 @@ export default function MagicalForestGame() {
         {/* Instructions */}
         <div className="mt-8 text-center text-gray-600 bg-white p-4 rounded-xl shadow">
           <p className="font-semibold">How to play:</p>
-          <p>Drag only the paper waste items to the recycling bin to help the forest grow!</p>
+          <p>Drag only the paper waste items to the recycling bin to help the forest grow</p>
           <div className="flex justify-center mt-2 gap-4 flex-wrap">
             <span className="text-gray-600">📄 Paper Waste</span>
             <span className="text-blue-500">🧴 Other Materials</span>

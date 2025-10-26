@@ -30,16 +30,16 @@ export default function Login() {
 
     const messages = {
         PARENT: [
-            "Welcome back, Parent!",
+            "Welcome back ...",
             "I'm here to help you access your account.",
             "Enter your credentials to continue supporting your child's journey.",
-            "Let's get you logged in!"
+            "Let's get you logged in"
         ],
         KID: [
-            "Welcome back, Explorer!",
+            "Welcome back ...",
             "Ready to continue your adventure?",
             "Enter your credentials to play and learn.",
-            "Let's get you logged in!"
+            "Let's get you logged in"
         ]
     };
 
@@ -126,7 +126,7 @@ export default function Login() {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Login successful! Redirecting...');
+                setMessage('Login successful. Redirecting...');
                 // Store the token if available
                 if (data.token) {
                     localStorage.setItem('authToken', data.token);
@@ -223,7 +223,7 @@ export default function Login() {
                             Login to Your Account
                         </h2>
                         <p className="text-center mb-8 text-gray-200">
-                            Welcome back! Please enter your credentials.
+                            Welcome back. Please enter your credentials.
                         </p>
 
                         <form className="space-y-6" onSubmit={handleSubmit}>

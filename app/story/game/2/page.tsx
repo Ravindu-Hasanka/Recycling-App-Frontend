@@ -384,7 +384,7 @@ const RiverRescueGame = () => {
               </div>
 
               <div className="text-center text-gray-600 text-sm md:text-base">
-                <p>Drag the items to the correct bins to clean the river!</p>
+                <p>Drag the items to the correct bins to clean the river</p>
               </div>
             </>
           )}
@@ -397,7 +397,7 @@ const RiverRescueGame = () => {
           </h3>
           <p className="text-yellow-700 text-sm md:text-base">
             Plastic pollution in rivers and oceans harms over 600 marine species. By properly sorting trash,
-            you're helping to protect aquatic life and keep our waterways clean!
+            you're helping to protect aquatic life and keep our waterways clean
           </p>
         </div>
 

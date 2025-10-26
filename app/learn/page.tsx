@@ -40,10 +40,10 @@ const Learn = () => {
       <main className="flex-grow py-16 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-center mb-6 text-blue-600">
-            Start Your Recycling Adventure!
+            Start Your Recycling Adventure
           </h1>
           <p className="text-xl text-center text-gray-700 mb-12">
-            Join EcoKids and make recycling fun and impactful!
+            Join EcoKids and make recycling fun and impactful
           </p>
 
           <ActivitiesGrid />

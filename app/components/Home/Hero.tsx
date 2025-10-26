@@ -77,7 +77,7 @@ const Hero = () => {
     <section className="py-12 md:py-20 text-center px-4">
       <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to EcoKids!</h1>
       <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-        Explore Fun Learning for Your Little Ones!
+        Explore Fun Learning for Your Little Ones...
       </p>
 
       <div className="flex flex-wrap justify-center gap-4 mb-12">
