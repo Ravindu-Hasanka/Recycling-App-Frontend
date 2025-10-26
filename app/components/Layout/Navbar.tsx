@@ -11,20 +11,20 @@ const Navbar: React.FC = () => {
   const [role, setRole] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedRole = localStorage.getItem('role');
+    const storedRole = localStorage.getItem('authToken');
     setRole(storedRole);
   }, []);
 
   const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('userid');
     localStorage.removeItem('role');
-    setRole(null);
+    localStorage.removeItem('user');
     router.push('/login');
   };
 
   const handleLogin = () => {
-    localStorage.setItem('role', 'STUDENT');
-    setRole('STUDENT');
-    router.push('/');
+    router.push('/login');
   };
 
   return (
