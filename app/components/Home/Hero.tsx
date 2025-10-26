@@ -8,13 +8,18 @@ import { Button } from '@/app/components/ui/button';
 const Hero = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [isMuted, setIsMuted] = useState(true); 
+  const [isMuted, setIsMuted] = useState(true);
 
   useEffect(() => {
     const handleIntersection = (entries: IntersectionObserverEntry[]) => {
-      if (entries[0].isIntersecting && videoRef.current) {
+      if (!videoRef.current) return;
+
+      if (entries[0].isIntersecting) {
         videoRef.current.play();
         setIsPlaying(true);
+      } else {
+        videoRef.current.pause();
+        setIsPlaying(false);
       }
     };
 
@@ -27,6 +32,25 @@ const Hero = () => {
 
     return () => {
       if (current) observer.unobserve(current);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!videoRef.current) return;
+
+      if (document.hidden) {
+        videoRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        videoRef.current.play();
+        setIsPlaying(true);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
 
@@ -46,27 +70,19 @@ const Hero = () => {
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
     }
-    setIsMuted(!isMuted); 
+    setIsMuted(!isMuted);
   };
 
   return (
     <section className="py-12 md:py-20 text-center px-4">
       <h1 className="text-4xl md:text-5xl font-bold mb-4">Welcome to EcoKids!</h1>
       <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-        Explore Fun Learning for Your Little Ones!
+        Explore Fun Learning for Your Little Ones...
       </p>
 
       <div className="flex flex-wrap justify-center gap-4 mb-12">
         <Button size="lg" className="bg-blue-500 hover:bg-blue-600" asChild>
           <Link href="/signup">Join us now</Link>
-        </Button>
-        <Button
-          variant="outline"
-          size="lg"
-          className="border-blue-500 text-blue-500 hover:bg-blue-50"
-          asChild
-        >
-          <Link href="/demo">Request demo</Link>
         </Button>
       </div>
 
@@ -76,6 +92,7 @@ const Hero = () => {
           className="w-full h-full object-cover rounded-lg"
           loop
           autoPlay
+          muted
           playsInline
           preload="auto"
         >

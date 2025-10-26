@@ -79,7 +79,7 @@ export default function SortTrashGame() {
       </Head>
       
       <h1 className="text-3xl font-bold mb-4 text-green-800">Sort the Trash</h1>
-      <p className="mb-6 text-gray-600">Drag each item to the correct recycling bin!</p>
+      <p className="mb-6 text-gray-600">Drag each item to the correct recycling bin</p>
       
       <div className="mb-8 flex justify-center items-center gap-8">
         <div className="bg-white p-4 rounded-lg shadow-md">

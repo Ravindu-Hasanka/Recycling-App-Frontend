@@ -207,7 +207,7 @@ export default function PlaygroundGame() {
         {/* Header */}
         <header className="text-center my-6">
           <h1 className="text-4xl font-bold text-green-800">EcoHero: Waste Sorting Game</h1>
-          <p className="text-lg text-gray-600 mt-2">Learn what items are waste and how to properly dispose of them!</p>
+          <p className="text-lg text-gray-600 mt-2">Learn what items are waste and how to properly dispose of them</p>
           <div className="bg-green-200 inline-block px-4 py-2 rounded-full mt-4">
             <span className="text-green-800 font-semibold">Score: {gameState.score}</span>
           </div>

@@ -25,7 +25,7 @@ const FeaturedSection = () => {
           <div className="bg-green-500 text-white p-12 rounded-lg">
   <h2 className="text-3xl font-bold mb-4">Interactive Learning & Rewards</h2>
   <p className="mb-6">
-    Make learning fun with EcoKids! Kids earn badges and rewards as they complete eco-missions, quizzes, and creative challenges. Designed to spark curiosity and a love for sustainability through play.
+    Make learning fun with EcoKids... Kids earn badges and rewards as they complete eco-missions, quizzes, and creative challenges. Designed to spark curiosity and a love for sustainability through play.
   </p>
   <Button 
     className="bg-white text-green-500 hover:bg-gray-100" 

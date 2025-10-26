@@ -24,10 +24,10 @@ export default function Register() {
     const router = useRouter();
 
     const messages = [
-        "Welcome to Parent Registration!",
+        "Welcome to Parent Registration",
         "I'm here to help you create your account.",
         "Fill in your details to get started with our platform.",
-        "Together, we'll support your child's educational journey!"
+        "Together, we'll support your child's educational journey"
     ];
 
     // Animate character entrance
@@ -101,7 +101,7 @@ export default function Register() {
             const data = await response.json();
 
             if (response.ok) {
-                setMessage('Registration successful! You can now log in.');
+                setMessage('Registration successful. You can now log in.');
                 setTimeout(() => {
                     router.push('/login');
                 }, 3000);

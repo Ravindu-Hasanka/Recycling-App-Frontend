@@ -1,7 +1,10 @@
+'use client';
+
 import React from 'react';
 import Navbar from '../components/Layout/Navbar';
 import Footer from '../components/Layout/Footer';
 import { Button } from '../components/ui/button';
+import { useRouter } from 'next/navigation';
 
 const Paths = () => {
   const topics = [
@@ -23,7 +26,10 @@ const Paths = () => {
     },
   ];
 
+  const router = useRouter();
+  
   return (
+    
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
@@ -31,7 +37,7 @@ const Paths = () => {
           <div>
             <h1 className="text-4xl font-bold text-white mb-4">Select Your Interests</h1>
             <p className="text-xl text-white mb-8">Discover fun ways to learn about recycling and make a difference!</p>
-            <Button size="lg" className="bg-blue-500 hover:bg-blue-600">
+            <Button size="lg" className="bg-blue-500 hover:bg-blue-600" onClick={() => router.push('/paths/eco-bot')}>
               Get Started
             </Button>
           </div>

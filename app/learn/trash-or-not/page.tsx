@@ -85,7 +85,7 @@ export default function TrashOrNotGame() {
           <div className="w-24 h-24 bg-yellow-400 rounded-full flex items-center justify-center text-4xl mb-4 mx-auto">
             🌎
           </div>
-          <h2 className="text-2xl font-bold mb-4 text-blue-600">Eco Hero Challenge!</h2>
+          <h2 className="text-2xl font-bold mb-4 text-blue-600">Eco Hero Challenge</h2>
           <p className="mb-6 text-lg">Can you sort 10 items correctly to help our planet?</p>
           <button
             onClick={startGame}
@@ -104,7 +104,7 @@ export default function TrashOrNotGame() {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-8 rounded-xl max-w-md w-full animate-pop-in">
             <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-3xl font-bold mb-4 text-green-600">Game Complete!</h2>
+            <h2 className="text-3xl font-bold mb-4 text-green-600">Game Complete</h2>
             <div className="text-5xl font-bold mb-6 text-blue-600">{percentage}%</div>
             <p className="text-xl mb-6">
               You scored {score} out of {totalQuestions * 10} points!

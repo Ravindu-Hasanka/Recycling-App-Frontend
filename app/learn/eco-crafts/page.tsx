@@ -9,7 +9,7 @@ const EcoCraftsPage = () => {
   return (
     <div className="min-h-screen py-12 px-4 bg-gradient-to-br from-green-50 to-blue-50">
       <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-4xl md:text-5xl font-bold text-green-700 mb-4">🎨 Eco Crafts Adventure!</h1>
+        <h1 className="text-4xl md:text-5xl font-bold text-green-700 mb-4">🎨 Eco Crafts Adventure</h1>
         <p className="text-lg text-gray-700 mb-6">Let’s turn trash into treasure. Ready to craft something cool?</p>
 
         <img

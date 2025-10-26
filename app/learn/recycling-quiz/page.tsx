@@ -217,7 +217,7 @@ export default function RecyclingQuiz() {
           </div>
         ) : (
           <div className="flex-grow flex flex-col items-center justify-center">
-            <h1 className="text-3xl font-bold mb-4 text-green-800">Recycling Adventure!</h1>
+            <h1 className="text-3xl font-bold mb-4 text-green-800">Recycling Adventure</h1>
             <div className="w-screen mb-4 px-40 flex flex-col justify-between items-center">
               <div className="w-full bg-gray-200 rounded-full h-6">
                 <div 

@@ -120,7 +120,7 @@ export default function CleanPark() {
         
         <div className="relative z-10 h-full flex flex-col">
           <header className="bg-green-800 bg-opacity-90 text-white p-4 text-center">
-            <h1 className="text-3xl font-bold">Clean the Park!</h1>
+            <h1 className="text-3xl font-bold">Clean the Park</h1>
             <div className="flex justify-between items-center mt-2 px-4">
               <div className="bg-white text-green-800 px-3 py-1 rounded-full font-bold">
                 Score: {score}
@@ -146,7 +146,7 @@ export default function CleanPark() {
                     left: item.left,
                     transform: `rotate(${item.rotation}deg) scale(${item.scale})`
                   }}
-                  title="Click to clean up!"
+                  title="Click to clean up"
                 >
                   <Image
                     src={trashImages[item.type]}

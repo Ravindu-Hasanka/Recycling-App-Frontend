@@ -30,22 +30,22 @@ const PointsDisplay = () => {
   const pointLevels = [
     {
       points: 200,
-      description: "Awesome! Earn 200 points by completing activities on EcoQuest!",
+      description: "Awesome! Earn 200 points by completing activities on EcoQuest",
       imageUrl: "/images/points-200.png"
     },
     {
       points: 500,
-      description: "Great! Earn 500 points for more fun on EcoQuest!",
+      description: "Great! Earn 500 points for more fun on EcoQuest",
       imageUrl: "/images/points-500.png"
     },
     {
       points: 1000,
-      description: "Super! 1000 points have been reached. Explore more adventures!",
+      description: "Super! 1000 points have been reached. Explore more adventures",
       imageUrl: "/images/points-1000.png"
     },
     {
       points: 2000,
-      description: "Fantastic! 2000 points unlocked – you're a true eco-hero!",
+      description: "Fantastic! 2000 points unlocked – you're a true eco-hero",
       imageUrl: "/images/points-2000.png"
     }
   ];
