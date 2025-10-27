@@ -48,6 +48,9 @@ interface ProgressItem {
   glass: number;
   organic: number;
   metal: number;
+  day1Score?: number;
+  day2Score?: number;
+  day3Score?: number;
 }
 
 interface ProgressStats {
@@ -74,11 +77,17 @@ interface CompletedActivity {
   image: string;
 }
 
+interface DayScoreDataPoint {
+  day: string;
+  score: number;
+}
+
 interface ProgressData {
   stats: ProgressStats;
   progressData: ProgressDataPoint[];
   wasteTypeData: WasteTypeDataPoint[];
   completedActivities: CompletedActivity[];
+  dayScoresData: DayScoreDataPoint[]; // NEW: averages of day1/2/3 scores
 }
 
 const upcomingActivities: UpcomingActivity[] = [
@@ -98,6 +107,7 @@ const ParentTools = () => {
   const [newChildUsername, setNewChildUsername] = useState<string>('');
   const [newChildEmail, setNewChildEmail] = useState<string>('');
   const [newChildPassword, setNewChildPassword] = useState<string>('');
+  const [newChildAge, setNewChildAge] = useState<string>('');
   const [stories, setStories] = useState<Story[]>([]);
   const router = useRouter();
 
@@ -117,8 +127,8 @@ const ParentTools = () => {
     }
   }, [router]);
 
-  const parentId = localStorage.getItem('userid');
-  const token = localStorage.getItem('authToken');
+  const parentId = typeof window !== 'undefined' ? localStorage.getItem('userid') : null;
+  const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
   
   useEffect(() => {
     if (!token || !parentId) return;
@@ -203,7 +213,7 @@ const ParentTools = () => {
           return;
         }
         
-        const progressData: ProgressItem[] = await response.json();
+        const items: ProgressItem[] = await response.json();
         
         // Calculate waste type totals
         const wasteTypeTotals = {
@@ -213,7 +223,7 @@ const ParentTools = () => {
           Metal: 0,
         };
         
-        progressData.forEach((item: ProgressItem) => {
+        items.forEach((item: ProgressItem) => {
           wasteTypeTotals.Plastic += item.plastic || 0;
           wasteTypeTotals.Organic += item.organic || 0;
           wasteTypeTotals.Glass += item.glass || 0;
@@ -221,29 +231,43 @@ const ParentTools = () => {
         });
         
         // Map progress data to story details
-        const completedActivities = progressData
+        const completedActivities = items
           .filter(item => item.marks && item.marks.length > 0) // Only include completed activities
           .map((item, index) => {
             const story = stories.find(s => s.id === item.storyId);
             return {
               name: story ? story.title : `Activity ${index + 1}`,
               date: new Date(item.lastPlayed).toLocaleDateString(),
-              accuracy: `${item.marks[item.marks.length - 1] || 0}%`,
-              points: item.marks.reduce((sum, mark) => sum + mark, 0),
-              image: story ? story.image : `https://placehold.co/600x400/${colors[index]}/ffffff?text=Activity`
+              accuracy: `${item.marks[item.marks.length - 1] ?? 0}%`,
+              points: (item.marks ?? []).reduce((sum, mark) => sum + mark, 0),
+              image: story ? story.image : `https://placehold.co/600x400/${colors[index % colors.length]}/ffffff?text=Activity`
             };
           });
 
+        // NEW: compute averages for day1Score, day2Score, day3Score across items
+        const dayAgg = { d1Sum: 0, d1Count: 0, d2Sum: 0, d2Count: 0, d3Sum: 0, d3Count: 0 };
+        items.forEach((it) => {
+          if (typeof it.day1Score === 'number') { dayAgg.d1Sum += it.day1Score; dayAgg.d1Count += 1; }
+          if (typeof it.day2Score === 'number') { dayAgg.d2Sum += it.day2Score; dayAgg.d2Count += 1; }
+          if (typeof it.day3Score === 'number') { dayAgg.d3Sum += it.day3Score; dayAgg.d3Count += 1; }
+        });
+        const avg = (sum: number, count: number) => count > 0 ? Math.round(sum / count) : 0;
+        const dayScoresData: DayScoreDataPoint[] = [
+          { day: 'Day 1', score: avg(dayAgg.d1Sum, dayAgg.d1Count) },
+          { day: 'Day 2', score: avg(dayAgg.d2Sum, dayAgg.d2Count) },
+          { day: 'Day 3', score: avg(dayAgg.d3Sum, dayAgg.d3Count) },
+        ];
+
         const transformedData: ProgressData = {
           stats: {
-            totalPoints: progressData.reduce((total: number, item: ProgressItem) => 
-              total + (item.marks?.reduce((sum, mark) => sum + mark, 0) || 0), 0),
-            itemsRecycled: progressData.length * 10,
-            dayStreak: Math.floor(progressData.length / 2) 
+            totalPoints: items.reduce((total: number, item: ProgressItem) => 
+              total + ((item.marks ?? []).reduce((sum, mark) => sum + mark, 0)), 0),
+            itemsRecycled: items.length * 10,
+            dayStreak: Math.floor(items.length / 2) 
           },
           progressData: [
-            { week: 'Week 1', points: progressData[0]?.marks?.reduce((sum, mark) => sum + mark, 0) || 0 },
-            { week: 'Week 2', points: progressData[1]?.marks?.reduce((sum, mark) => sum + mark, 0) || 0 },
+            { week: 'Week 1', points: (items[0]?.marks ?? []).reduce((sum, mark) => sum + mark, 0) || 0 },
+            { week: 'Week 2', points: (items[1]?.marks ?? []).reduce((sum, mark) => sum + mark, 0) || 0 },
           ],
           wasteTypeData: [
             { name: 'Plastic', value: wasteTypeTotals.Plastic },
@@ -251,7 +275,8 @@ const ParentTools = () => {
             { name: 'Glass', value: wasteTypeTotals.Glass },
             { name: 'Metal', value: wasteTypeTotals.Metal },
           ],
-          completedActivities
+          completedActivities,
+          dayScoresData, // NEW
         };
 
         setProgressData(transformedData);
@@ -278,6 +303,7 @@ const ParentTools = () => {
           password: newChildPassword,
           name: newChildName,
           email: newChildEmail,
+          age: parseInt(newChildAge, 10),
           role: "STUDENT",
           parentId: parentId
         })
@@ -296,6 +322,7 @@ const ParentTools = () => {
         setNewChildUsername('');
         setNewChildEmail('');
         setNewChildPassword('');
+        setNewChildAge('');
         setShowAddChildModal(false);
         fetchChildren(); // Refresh the children list
       } else {
@@ -489,6 +516,35 @@ const ParentTools = () => {
                 </div>
               </section>
 
+              {/* NEW: Daily Quiz Scores (Day1/Day2/Day3 averages) */}
+              <section className="mb-12">
+                <div className="bg-white p-6 rounded-xl shadow-sm">
+                  <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-gray-700">
+                    <Trophy className="text-emerald-500" /> Daily Quiz Scores
+                  </h2>
+                  <p className="text-sm text-gray-500 mb-2">
+                    Showing the average of Day 1, Day 2, and Day 3 scores across recent activities.
+                  </p>
+                  <div className="h-64">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={progressData.dayScoresData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="day" />
+                        <YAxis domain={[0, 100]} />
+                        <Tooltip />
+                        <Line
+                          type="monotone"
+                          dataKey="score"
+                          stroke="#3498db"
+                          strokeWidth={2}
+                          dot={{ fill: '#3498db' }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              </section>
+
               {/* Completed Activities */}
               <section className="mb-12">
                 <h2 className="text-2xl font-bold mb-6 text-gray-800">Recent Achievements</h2>
@@ -620,6 +676,20 @@ const ParentTools = () => {
                   type="password"
                   value={newChildPassword}
                   onChange={(e) => setNewChildPassword(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                  required
+                />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-gray-700 mb-2" htmlFor="age">
+                  Age
+                </label>
+                <input
+                  id="age"
+                  type="number"
+                  value={newChildAge}
+                  onChange={(e) => setNewChildAge(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />

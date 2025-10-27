@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
+import Navbar from "../components/Layout/Navbar";
+import Footer from "../components/Layout/Footer";
 
 // Types
 type AgeGroup = '1' | '2' | '3';
@@ -469,8 +471,8 @@ const getAgeGroupConfig = (ageGroup: AgeGroup) => {
       progressColor: "bg-green-500",
       cardPadding: "p-6",
       emojiContainerHeight: "h-24",
-      showEmoji: false, // No emoji for older kids
-      maxWidth: "max-w-2xl" // Wider for text-based questions
+      showEmoji: false,
+      maxWidth: "max-w-2xl"
     }
   };
   return configs[ageGroup];
@@ -511,12 +513,54 @@ export default function RecyclingQuiz() {
   const [animate, setAnimate] = useState("");
   const [showFinalScore, setShowFinalScore] = useState(false);
   const [isClient, setIsClient] = useState(false);
+  const [submittedScore, setSubmittedScore] = useState(false);   // guard to avoid double submits
+  const [submittedStatus, setSubmittedStatus] = useState(false); // guard for status submit
+
+  // NEW: ensure we fetch & store settings BEFORE loading UI
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   const current = questions[index];
   const config = ageGroup ? getAgeGroupConfig(ageGroup) : null;
 
-  // Load saved settings on component mount (client-side only)
+  // Fetch level info and save to localStorage as { ageGroup, level } — THEN mark bootstrapped
   useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    const fetchLevelSettings = async () => {
+      try {
+        const res = await fetch("http://localhost:8085/api/student-course/level/full", {
+          method: "GET",
+          headers: {
+            accept: "*/*",
+            Authorization: `Bearer ${token}`
+          }
+        });
+        if (!res.ok) throw new Error("Failed to fetch level data");
+        const data = await res.json();
+
+        const apiAgeGroup: AgeGroup = (data.ageGroup?.toString() as AgeGroup) ?? '1';
+        const apiLevel: DifficultyLevel = (Number(data.overallLevelCode) as DifficultyLevel) ?? 1;
+
+        localStorage.setItem(
+          "recyclingQuizSettings",
+          JSON.stringify({ ageGroup: apiAgeGroup, level: apiLevel })
+        );
+        console.log("Saved recyclingQuizSettings:", { ageGroup: apiAgeGroup, level: apiLevel });
+      } catch (err) {
+        console.error("Error fetching level settings:", err);
+        // Even if it fails, proceed so UI isn't stuck
+      } finally {
+        setBootstrapped(true); // signal that localStorage is ready (or attempted)
+      }
+    };
+
+    if (typeof window !== "undefined") {
+      fetchLevelSettings();
+    }
+  }, []);
+
+  // Load saved settings ONLY AFTER bootstrapping is done
+  useEffect(() => {
+    if (!bootstrapped) return;
     setIsClient(true);
     const savedSettings = loadQuizSettings();
     if (savedSettings.ageGroup && savedSettings.level) {
@@ -525,7 +569,7 @@ export default function RecyclingQuiz() {
       const quizQuestions = getQuestionsForAgeAndLevel(savedSettings.ageGroup, savedSettings.level, 5);
       setQuestions(quizQuestions);
     }
-  }, []);
+  }, [bootstrapped]);
 
   useEffect(() => {
     if (showConfetti) {
@@ -535,15 +579,71 @@ export default function RecyclingQuiz() {
   }, [showConfetti]);
 
   const startQuiz = (selectedAgeGroup: AgeGroup, selectedLevel: DifficultyLevel) => {
-    // Save to localStorage
     saveQuizSettings(selectedAgeGroup, selectedLevel);
-    
     setAgeGroup(selectedAgeGroup);
     setLevel(selectedLevel);
     const quizQuestions = getQuestionsForAgeAndLevel(selectedAgeGroup, selectedLevel, 5);
     setQuestions(quizQuestions);
     setIndex(0);
     setScore(0);
+    setFeedback("");
+    setShowFinalScore(false);
+    setSubmittedScore(false);
+    setSubmittedStatus(false);
+  };
+
+  const calculatePercentage = () => {
+    return Math.round((score / questions.length) * 100);
+  };
+
+  // Submit score to backend using level as "day"
+  const submitScoreToBackend = async (day: number, percentage: number) => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url = `http://localhost:8085/api/student-course/day/${day}/score`;
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          accept: "*/*",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ score: percentage })
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(`Score submit failed: ${res.status} ${t}`);
+      }
+      console.log("Score submitted:", { day, percentage });
+      setSubmittedScore(true);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Submit status to backend using level as "day"
+  const submitStatusToBackend = async (day: number, status: "COMPLETED" | "IN_PROGRESS" | "NOT_START") => {
+    try {
+      const token = localStorage.getItem("authToken");
+      const url = `http://localhost:8085/api/student-course/day/${day}/status`;
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          accept: "*/*",
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) {
+        const t = await res.text().catch(() => "");
+        throw new Error(`Status submit failed: ${res.status} ${t}`);
+      }
+      console.log("Status submitted:", { day, status });
+      setSubmittedStatus(true);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const check = (opt: string) => {
@@ -551,7 +651,7 @@ export default function RecyclingQuiz() {
 
     if (opt === current.correct) {
       setFeedback("🎉 Correct!");
-      setScore(score + 1);
+      setScore(prev => prev + 1);
       setShowConfetti(true);
       setAnimate("jump");
     } else {
@@ -563,8 +663,20 @@ export default function RecyclingQuiz() {
       setFeedback("");
       setAnimate("");
       
-      if (index === questions.length - 1) {
+      const isLast = index === questions.length - 1;
+
+      if (isLast) {
         setShowFinalScore(true);
+
+        // compute final percentage with the just-clicked answer accounted for
+        const finalCorrect = opt === current.correct ? score + 1 : score;
+        const pct = Math.round((finalCorrect / questions.length) * 100);
+
+        // Submit both score and status once
+        if (level) {
+          if (!submittedScore) submitScoreToBackend(level, pct);
+          if (!submittedStatus) submitStatusToBackend(level, "COMPLETED");
+        }
       } else {
         setIndex(index + 1);
       }
@@ -579,6 +691,8 @@ export default function RecyclingQuiz() {
       setScore(0);
       setFeedback("");
       setShowFinalScore(false);
+      setSubmittedScore(false);
+      setSubmittedStatus(false);
     }
   };
 
@@ -586,10 +700,8 @@ export default function RecyclingQuiz() {
     setAgeGroup(null);
     setLevel(null);
     setShowFinalScore(false);
-  };
-
-  const calculatePercentage = () => {
-    return Math.round((score / questions.length) * 100);
+    setSubmittedScore(false);
+    setSubmittedStatus(false);
   };
 
   const getScoreMessage = (percentage: number, ageGroup: AgeGroup) => {
@@ -605,7 +717,7 @@ export default function RecyclingQuiz() {
   };
 
   // Show loading state during SSR and until client-side hydration is complete
-  if (!isClient) {
+  if (!isClient || !bootstrapped) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-6 flex items-center justify-center">
         <div className="text-center">
@@ -622,7 +734,7 @@ export default function RecyclingQuiz() {
       <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 p-6 flex flex-col items-center justify-center">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold text-green-800 mb-4">🌍 Recycling Quiz</h1>
-          <p className="text-xl text-gray-600">Choose your age group and level to start!</p>
+        <p className="text-xl text-gray-600">Choose your age group and level to start!</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-6xl">
@@ -695,8 +807,9 @@ export default function RecyclingQuiz() {
 
   // Quiz Screen
   return (
-    <div className={`min-h-screen bg-gradient-to-b ${config?.theme} p-6 flex flex-col`}>
-      <div className="flex-grow flex flex-col items-center justify-center">
+    <div className={`min-h-screen bg-gradient-to-b ${config?.theme} flex flex-col`}>
+      <Navbar />
+      <div className="flex-grow flex flex-col items-center justify-center mt-5">
         <h1 className={`font-bold mb-4 text-green-800 ${config?.textSize === 'text-2xl' ? 'text-4xl' : config?.textSize === 'text-xl' ? 'text-3xl' : 'text-2xl'}`}>
           {config?.title}
         </h1>
@@ -812,7 +925,7 @@ export default function RecyclingQuiz() {
             {/* Feedback */}
             {feedback && (
               <div className={`p-4 rounded-lg w-full mb-4 ${config?.maxWidth}
-                ${feedback.includes("Correct") ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border border-red-300"}`}>
+                ${feedback.includes("Correct") ? "bg-green-100 text-green-800 border border-green-300" : "bg-red-100 text-red-800 border-red-300"}`}>
                 <p className={`text-center font-bold ${config?.textSize}`}>{feedback}</p>
                 {feedback.includes("Correct") && (
                   <p className="mt-2 text-center">Current score: {score}/{questions.length}</p>

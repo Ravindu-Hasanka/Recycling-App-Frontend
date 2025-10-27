@@ -23,6 +23,7 @@ const Navbar: React.FC = () => {
     localStorage.removeItem('userid');
     localStorage.removeItem('role');
     localStorage.removeItem('user');
+    localStorage.removeItem('recyclingQuizSettings');
     router.push('/login');
   };
 
@@ -43,11 +44,11 @@ const Navbar: React.FC = () => {
         <div className="hidden md:flex items-center space-x-8">
           <Link href="/" className="text-gray-700 hover:text-blue-500 transition-colors">Home</Link>
           <Link href="/story" className="text-gray-700 hover:text-blue-500 transition-colors">Eco Story</Link>
-          {role === 'STUDENT' && (
+          {/* {role === 'STUDENT' && (
             <Link href="/learn" className="text-gray-700 hover:text-blue-500 transition-colors">Learn</Link>
-          )}
+          )} */}
           {role === 'STUDENT' && (
-            <Link href="/course" className="text-gray-700 hover:text-blue-500 transition-colors">Course</Link>
+            <Link href="/day1" className="text-gray-700 hover:text-blue-500 transition-colors">Course</Link>
           )}
           <Link href="/paths" className="text-gray-700 hover:text-blue-500 transition-colors">Paths</Link>
           {role === 'PARENT' && (
