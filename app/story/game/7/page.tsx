@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react';
 
 interface FarmItem {
   id: number;
-  type: 'hazardous' | 'recyclable' | 'compost' | 'trash';
+  type: 'hazardous' | 'recyclable' | 'Food Waste' | 'trash';
   name: string;
   image: string;
   description: string;
@@ -15,7 +15,7 @@ interface FarmItem {
 }
 
 interface Bin {
-  type: 'hazardous' | 'recyclable' | 'compost' | 'trash';
+  type: 'hazardous' | 'recyclable' | 'Food Waste' | 'trash';
   label: string;
   color: string;
   icon: string;
@@ -61,7 +61,7 @@ const FarmyardFixGame = () => {
     { id: 1, type: 'hazardous', name: 'Old Battery', image: '/images/trash/battery.png', description: 'Contains toxic chemicals', isHazardous: true },
     { id: 2, type: 'recyclable', name: 'Plastic Container', image: '/images/trash/plastic-container.png', description: 'Clean plastic #2', isHazardous: false },
     { id: 3, type: 'hazardous', name: 'Pesticide Bottle', image: '/images/trash/pesticide.png', description: 'Chemical container', isHazardous: true },
-    { id: 4, type: 'compost', name: 'Vegetable Scraps', image: '/images/trash/vegetable-scraps.png', description: 'Food waste', isHazardous: false },
+    { id: 4, type: 'Food Waste', name: 'Vegetable Scraps', image: '/images/trash/vegetable-scraps.png', description: 'Food waste', isHazardous: false },
     { id: 5, type: 'hazardous', name: 'Electronic Waste', image: '/images/trash/e-waste.png', description: 'Old phone with toxic components', isHazardous: true },
     { id: 6, type: 'recyclable', name: 'Glass Jar', image: '/images/trash/glass-jar.png', description: 'Clean glass container', isHazardous: false },
     { id: 7, type: 'trash', name: 'Chip Bag', image: '/images/trash/chip-bag.png', description: 'Mixed material packaging', isHazardous: false },
@@ -72,7 +72,7 @@ const FarmyardFixGame = () => {
   const [bins] = useState<Bin[]>([
     { type: 'hazardous', label: 'Hazardous Waste', color: 'bg-red-600', icon: '⚠️', accepts: ['hazardous'], description: 'Batteries, chemicals, electronics' },
     { type: 'recyclable', label: 'Recycling', color: 'bg-blue-500', icon: '♻️', accepts: ['recyclable'], description: 'Clean plastics, glass, paper' },
-    { type: 'compost', label: 'Compost', color: 'bg-amber-700', icon: '🍃', accepts: ['compost'], description: 'Food scraps, yard waste' },
+    { type: 'Food Waste', label: 'Food Waste', color: 'bg-amber-700', icon: '🍃', accepts: ['Food Waste'], description: 'Food scraps, yard waste' },
     { type: 'trash', label: 'Landfill', color: 'bg-gray-500', icon: '🗑️', accepts: ['trash'], description: 'Non-recyclable materials' },
   ]);
 

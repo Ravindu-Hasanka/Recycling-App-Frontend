@@ -72,7 +72,7 @@ const SchoolProjectGame = () => {
         { id: "A", label: "Paper Bin", binType: "paper", isCorrect: true },
         { id: "B", label: "Plastic Bin", binType: "plastic", isCorrect: false },
         { id: "C", label: "Glass Bin", binType: "glass", isCorrect: false },
-        { id: "D", label: "Compost Bin", binType: "organic", isCorrect: false }
+        { id: "D", label: "Food Waste Bin", binType: "organic", isCorrect: false }
       ],
       explanation: "Milk cartons are made from paperboard with a thin plastic coating, so they go in the paper recycling!"
     },
@@ -93,7 +93,7 @@ const SchoolProjectGame = () => {
       question: "What bin does pizza cardboard go in?",
       itemImage: "/images/trash/pizza-box.png",
       options: [
-        { id: "A", label: "Compost Bin", binType: "organic", isCorrect: false },
+        { id: "A", label: "Food Waste Bin", binType: "organic", isCorrect: false },
         { id: "B", label: "Paper Bin", binType: "paper", isCorrect: true },
         { id: "C", label: "General Waste", binType: "general", isCorrect: false },
         { id: "D", label: "It depends on grease stains", binType: "paper", isCorrect: true }
@@ -108,7 +108,7 @@ const SchoolProjectGame = () => {
         { id: "A", label: "Plastic Bin", binType: "plastic", isCorrect: false },
         { id: "B", label: "General Waste", binType: "general", isCorrect: true },
         { id: "C", label: "Metal Bin", binType: "metal", isCorrect: false },
-        { id: "D", label: "Compost Bin", binType: "organic", isCorrect: false }
+        { id: "D", label: "Food Waste Bin", binType: "organic", isCorrect: false }
       ],
       explanation: "Most plastic utensils are not recyclable due to their size and material mix, so they go in general waste."
     },
@@ -120,7 +120,7 @@ const SchoolProjectGame = () => {
         { id: "A", label: "General Waste", binType: "general", isCorrect: false },
         { id: "B", label: "Metal Bin", binType: "metal", isCorrect: true },
         { id: "C", label: "Plastic Bin", binType: "plastic", isCorrect: false },
-        { id: "D", label: "Compost Bin", binType: "organic", isCorrect: false }
+        { id: "D", label: "Food Waste Bin", binType: "organic", isCorrect: false }
       ],
       explanation: "Clean aluminum foil can be recycled with metals. Make sure to clean it first!"
     }
