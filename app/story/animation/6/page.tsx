@@ -113,7 +113,7 @@ export default function VideoIntroPage() {
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end items-center p-8">
         {/* Title */}
         <h1 className="text-4xl md:text-6xl font-bold text-white mb-8 text-center">
-          Chapter 06
+          Chapter 02
         </h1>
 
         {/* Control buttons */}

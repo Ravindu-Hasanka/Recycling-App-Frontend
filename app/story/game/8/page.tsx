@@ -289,45 +289,46 @@ const CityStreetsGame = () => {
               </p>
 
               <div className="my-6">
-                <div className="inline-block bg-blue-100 rounded-full p-4 shadow-lg">
-                  <span className="text-4xl">🧥</span>
+                <div className="inline-block bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 shadow-lg">
+                  <span className="text-4xl">🦸</span>
                 </div>
-                <p className="text-blue-700 font-bold mt-2">Reflective Jacket Unlocked!</p>
+                <p className="text-purple-700 font-bold mt-2">Super EcoHero Achieved!</p>
+              </div>
+              <div className="celebration-animals flex justify-center gap-4 text-3xl my-4">
+                <span className="animate-bounce">🐢</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.1s' }}>🐟</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>🐇</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.3s' }}>🐦</span>
+                <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>🦊</span>
               </div>
 
-              <div className="city-celebration flex justify-center gap-4 text-3xl my-4">
-                <span className="animate-bounce">✨</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.2s' }}>✨</span>
-                <span className="animate-bounce" style={{ animationDelay: '0.4s' }}>✨</span>
+              <div className="mt-6 p-4 bg-yellow-100 rounded-lg">
+                <p className="text-amber-700 font-bold">
+                  Congratulations! You've completed all recycling challenges!
+                </p>
+                <p className="text-amber-700">You're now a certified Super EcoHero!</p>
               </div>
 
-              <div className="flex justify-center gap-4">
-                <button
-                  onClick={resetGame}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
-                >
-                  Play Again
-                </button>
-                <button
-                  onClick={async () => {
-                    if (story) {
-                      try {
-                        await updateProgress({
-                          storyId: story.id,
-                          score: score,
-                        });
-                        console.log("Progress updated!");
-                      } catch (err) {
-                        console.error("Failed to update progress", err);
-                      }
+              {/* Go Home Button */}
+              <button
+                onClick={async () => {
+                  if (story) {
+                    try {
+                      await updateProgress({
+                        storyId: story.id,
+                        score: score,
+                      });
+                      console.log("Progress updated!");
+                    } catch (err) {
+                      console.error("Failed to update progress", err);
                     }
-                    router.push("/story/animation/9");
-                  }}
-                  className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md mt-4"
-                >
-                  Continue
-                </button>
-              </div>
+                  }
+                  router.push("/");
+                }}
+                className="mt-6 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full transition-all transform hover:scale-105 shadow-md"
+              >
+                Go Home
+              </button>
             </div>
           )}
 
