@@ -109,6 +109,9 @@ const ParentTools = () => {
   const [newChildPassword, setNewChildPassword] = useState<string>('');
   const [newChildAge, setNewChildAge] = useState<string>('');
   const [stories, setStories] = useState<Story[]>([]);
+  // NEW: error message shown inside Add Child modal
+  const [addChildError, setAddChildError] = useState<string | null>(null);
+
   const router = useRouter();
 
   // Check if user is logged in
@@ -292,6 +295,7 @@ const ParentTools = () => {
     e.preventDefault();
     
     try {
+      setAddChildError(null); // clear previous error
       const response = await fetch('http://localhost:8085/api/auth/parent/add-child', {
         method: 'POST',
         headers: {
@@ -324,14 +328,44 @@ const ParentTools = () => {
         setNewChildPassword('');
         setNewChildAge('');
         setShowAddChildModal(false);
+        setAddChildError(null);
         fetchChildren(); // Refresh the children list
       } else {
-        console.error('Failed to add child');
-        const errorData = await response.json();
-        console.error('Error details:', errorData);
+        // Try to parse a structured error from backend
+        let msg = 'Failed to add child';
+        try {
+          const errorData = await response.json();
+          if (typeof errorData === 'string') {
+            msg = errorData;
+          } else if (errorData?.message && typeof errorData.message === 'string') {
+            msg = errorData.message;
+          } else if (errorData?.errors && typeof errorData.errors === 'object') {
+            // Collect field errors into one message
+            const parts: string[] = [];
+            Object.entries(errorData.errors).forEach(([field, val]) => {
+              if (Array.isArray(val)) {
+                parts.push(`${field}: ${val.join(', ')}`);
+              } else if (typeof val === 'string') {
+                parts.push(`${field}: ${val}`);
+              }
+            });
+            if (parts.length) msg = parts.join(' | ');
+          } else if (response.statusText) {
+            msg = `${msg} (${response.status} ${response.statusText})`;
+          }
+        } catch {
+          // fallback to text
+          try {
+            const t = await response.text();
+            if (t) msg = t;
+          } catch {}
+        }
+        setAddChildError(msg);
+        console.error('Failed to add child:', msg);
       }
     } catch (error) {
       console.error('Error adding child:', error);
+      setAddChildError('Something went wrong while adding the child. Please try again.');
     }
   };
 
@@ -403,7 +437,10 @@ const ParentTools = () => {
               </div>
               
               <button
-                onClick={() => setShowAddChildModal(true)}
+                onClick={() => {
+                  setAddChildError(null); // clear error when opening modal
+                  setShowAddChildModal(true);
+                }}
                 className="flex items-center gap-2 px-4 py-3 bg-green-600 text-white rounded-lg shadow-sm hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
               >
                 <Plus className="w-5 h-5" />
@@ -625,6 +662,13 @@ const ParentTools = () => {
             </div>
             
             <form onSubmit={handleAddChild}>
+              {/* ERROR BANNER */}
+              {addChildError && (
+                <div className="mb-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-700">
+                  {addChildError}
+                </div>
+              )}
+
               <div className="mb-4">
                 <label className="block text-gray-700 mb-2" htmlFor="name">
                   Child's Name
@@ -633,7 +677,7 @@ const ParentTools = () => {
                   id="name"
                   type="text"
                   value={newChildName}
-                  onChange={(e) => setNewChildName(e.target.value)}
+                  onChange={(e) => { setNewChildName(e.target.value); setAddChildError(null); }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
@@ -647,7 +691,7 @@ const ParentTools = () => {
                   id="username"
                   type="text"
                   value={newChildUsername}
-                  onChange={(e) => setNewChildUsername(e.target.value)}
+                  onChange={(e) => { setNewChildUsername(e.target.value); setAddChildError(null); }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
@@ -661,7 +705,7 @@ const ParentTools = () => {
                   id="email"
                   type="email"
                   value={newChildEmail}
-                  onChange={(e) => setNewChildEmail(e.target.value)}
+                  onChange={(e) => { setNewChildEmail(e.target.value); setAddChildError(null); }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
@@ -675,7 +719,7 @@ const ParentTools = () => {
                   id="password"
                   type="password"
                   value={newChildPassword}
-                  onChange={(e) => setNewChildPassword(e.target.value)}
+                  onChange={(e) => { setNewChildPassword(e.target.value); setAddChildError(null); }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
@@ -689,7 +733,7 @@ const ParentTools = () => {
                   id="age"
                   type="number"
                   value={newChildAge}
-                  onChange={(e) => setNewChildAge(e.target.value)}
+                  onChange={(e) => { setNewChildAge(e.target.value); setAddChildError(null); }}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                   required
                 />
