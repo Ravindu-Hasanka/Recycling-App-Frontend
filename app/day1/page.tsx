@@ -16,6 +16,10 @@ type Question = {
   level: DifficultyLevel;
 };
 
+const reload = () => {
+    window.location.reload();
+};
+
 // Enhanced Question Bank with Text-Based Questions for Older Children
 const questionBank: Question[] = [
   // ========== AGE GROUP 1 ==========
@@ -877,10 +881,10 @@ export default function RecyclingQuiz() {
                   Try Again
                 </button>
                 <button
-                  onClick={backToSelection}
+                  onClick={reload}
                   className="px-6 py-3 bg-gray-100 text-gray-700 rounded-full font-bold hover:bg-gray-200 transition-colors"
                 >
-                  Choose Another Level
+                  Next
                 </button>
               </div>
             </div>

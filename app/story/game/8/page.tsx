@@ -72,7 +72,7 @@ const CityStreetsGame = () => {
     { type: 'plastic', label: 'Plastic', color: 'bg-blue-500', icon: '♳', accepts: ['plastic'], description: 'Bottles, containers' },
     { type: 'paper', label: 'Paper', color: 'bg-green-500', icon: '📄', accepts: ['paper'], description: 'Cups, paper, cardboard' },
     { type: 'glass', label: 'Glass', color: 'bg-yellow-500', icon: '🥃', accepts: ['glass'], description: 'Bottles, jars' },
-    { type: 'organic', label: 'Compost', color: 'bg-amber-700', icon: '🍃', accepts: ['organic'], description: 'Food waste' },
+    { type: 'organic', label: 'Food Waste', color: 'bg-amber-700', icon: '🍃', accepts: ['organic'], description: 'Food waste' },
     { type: 'general', label: 'General Waste', color: 'bg-gray-500', icon: '🗑️', accepts: ['general'], description: 'Non-recyclables' },
   ]);
 

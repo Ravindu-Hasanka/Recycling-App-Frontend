@@ -70,7 +70,7 @@ const RiverRescueGame = () => {
     { type: 'plastic', label: 'Plastic', color: 'bg-blue-500', icon: '♳', accepts: ['plastic'] },
     { type: 'paper', label: 'Paper', color: 'bg-green-500', icon: '📄', accepts: ['paper'] },
     { type: 'glass', label: 'Glass', color: 'bg-yellow-500', icon: '🥃', accepts: ['glass'] },
-    { type: 'organic', label: 'Compost', color: 'bg-amber-700', icon: '🍂', accepts: ['organic'] },
+    { type: 'organic', label: 'Food Waste', color: 'bg-amber-700', icon: '🍂', accepts: ['organic'] },
     { type: 'metal', label: 'Metal', color: 'bg-gray-500', icon: '🥫', accepts: ['metal'] },
   ]);
 

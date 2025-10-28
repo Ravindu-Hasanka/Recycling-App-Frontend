@@ -228,7 +228,7 @@ export default function Login() {
 
                         <form className="space-y-6" onSubmit={handleSubmit}>
                             {/* User Type Selector */}
-                            <div>
+                            {/* <div>
                                 <label htmlFor="user-type" className="block text-sm font-medium text-gray-200 mb-2">
                                     I am a
                                 </label>
@@ -263,7 +263,7 @@ export default function Login() {
                                         </div>
                                     )}
                                 </div>
-                            </div>
+                            </div> */}
 
                             <div>
                                 <label htmlFor="username" className="block text-sm font-medium text-gray-200">

@@ -57,7 +57,7 @@ const GrandCelebrationGame = () => {
     { type: 'plastic', label: 'Plastic', color: 'bg-blue-600', icon: '♳', accepts: ['plastic'], description: 'Bottles, containers, packaging' },
     { type: 'paper', label: 'Paper', color: 'bg-green-600', icon: '📄', accepts: ['paper'], description: 'Cardboard, paper, trays' },
     { type: 'glass', label: 'Glass', color: 'bg-yellow-600', icon: '🥃', accepts: ['glass'], description: 'Bottles, jars' },
-    { type: 'organic', label: 'Compost', color: 'bg-amber-700', icon: '🍃', accepts: ['organic'], description: 'Food waste, compostables' },
+    { type: 'organic', label: 'Food Waste', color: 'bg-amber-700', icon: '🍃', accepts: ['organic'], description: 'Food waste, compostables' },
     { type: 'metal', label: 'Metal', color: 'bg-gray-600', icon: '🥫', accepts: ['metal'], description: 'Cans, foil, metal items' },
     { type: 'electronic', label: 'E-Waste', color: 'bg-purple-600', icon: '📱', accepts: ['electronic'], description: 'Electronics, batteries' },
   ]);

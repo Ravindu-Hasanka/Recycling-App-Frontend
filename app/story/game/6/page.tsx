@@ -67,7 +67,7 @@ const MarketMysteryGame = () => {
 
   // Bin data
   const [bins] = useState<Bin[]>([
-    { type: 'organic', label: 'Compost', color: 'bg-amber-700', icon: '🍃', accepts: ['organic'] },
+    { type: 'organic', label: 'Food Waste', color: 'bg-amber-700', icon: '🍃', accepts: ['organic'] },
     { type: 'recyclable', label: 'Recycling', color: 'bg-blue-500', icon: '♻️', accepts: ['recyclable'] },
   ]);
 
